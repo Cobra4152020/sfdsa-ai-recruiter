@@ -79,8 +79,12 @@ export function OptInForm({
     setIsSubmitting(true)
     setError(null)
 
+    console.log("Starting user creation with:", { name, email, phone })
+
     try {
-      await setUserInfo(name, email, phone)
+      console.log("Calling setUserInfo...")
+      const result = await setUserInfo(name, email, phone)
+      console.log("User creation result:", result)
 
       // If this is for an application, mark the user as applied
       if (isApplying) {
@@ -109,8 +113,8 @@ export function OptInForm({
         }, 2000)
       }
     } catch (err) {
+      console.error("Detailed error in form submission:", err)
       setError("Failed to save your information. Please try again.")
-      console.error(err)
     } finally {
       setIsSubmitting(false)
     }
@@ -208,4 +212,3 @@ export function OptInForm({
     </Dialog>
   )
 }
-
