@@ -190,51 +190,111 @@ class DatabaseService {
 
   // Add or update a user
   async upsertUser(userData: Partial<UserData>): Promise<UserData> {
-    const isNewUser = !userData.id
-    const id = userData.id || uuidv4()
-    const now = new Date().toISOString()
+    try {
+      const isNewUser = !userData.id
+      const id = userData.id || uuidv4()
+      const now = new Date().toISOString()
 
-    // Prepare the user data for Supabase
-    const userToUpsert = {
-      id,
-      name: userData.name || "",
-      email: userData.email || "",
-      phone: userData.phone || "",
-      participationCount: userData.participationCount || 0,
-      hasApplied: userData.hasApplied || false,
-      referralCount: userData.referralCount || 0,
-      createdAt: userData.createdAt || now,
-      updatedAt: now,
-    }
+      // Prepare the user data for Supabase
+      const userToUpsert = {
+        id,
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        participationCount: userData.participationCount || 0,
+        hasApplied: userData.hasApplied || false,
+        referralCount: userData.referralCount || 0,
+        createdAt: userData.createdAt || now,
+        updatedAt: now,
+      }
 
-    // If in mock mode, handle with mock implementation
-    if (this.isMockMode) {
-      const existingUserIndex = this.mockUsers.findIndex(
-        (user) => (userData.id && user.id === userData.id) || (userData.email && user.email === userData.email),
-      )
+      // If in mock mode, handle with mock implementation
+      if (this.isMockMode) {
+        const existingUserIndex = this.mockUsers.findIndex(
+          (user) => (userData.id && user.id === userData.id) || (userData.email && user.email === userData.email),
+        )
 
-      if (existingUserIndex !== -1) {
-        // Update existing user
-        this.mockUsers[existingUserIndex] = {
-          ...this.mockUsers[existingUserIndex],
-          ...userToUpsert,
-          createdAt: this.mockUsers[existingUserIndex].createdAt, // Preserve original creation time
+        if (existingUserIndex !== -1) {
+          // Update existing user
+          this.mockUsers[existingUserIndex] = {
+            ...this.mockUsers[existingUserIndex],
+            ...userToUpsert,
+            createdAt: this.mockUsers[existingUserIndex].createdAt, // Preserve original creation time
+          }
+
+          // Send notification email for applied user
+          if (userData.hasApplied) {
+            await this.sendNotificationEmail(this.mockUsers[existingUserIndex])
+          }
+
+          return this.mockUsers[existingUserIndex]
+        } else {
+          // Insert new user
+          const newUser = {
+            ...userToUpsert,
+            createdAt: new Date(now),
+          }
+
+          this.mockUsers.push(newUser)
+
+          // Send notification email for new users
+          await this.sendNotificationEmail(newUser)
+
+          // Award first interaction badge for new users
+          await this.awardBadge(newUser.id, BADGE_TYPES.FIRST_INTERACTION)
+
+          return newUser
+        }
+      }
+
+      // Check if user already exists with this email
+      if (!userData.id && userData.email) {
+        const { data: existingUser, error: findError } = await supabase
+          .from("users")
+          .select("id")
+          .eq("email", userData.email)
+          .single()
+
+        if (findError) {
+          console.error("Error checking for existing user:", findError)
         }
 
-        // Send notification email for applied user
-        if (userData.hasApplied) {
-          await this.sendNotificationEmail(this.mockUsers[existingUserIndex])
-        }
+        if (existingUser) {
+          // Update the existing user instead
+          const { data: updatedUser, error } = await supabase
+            .from("users")
+            .update({
+              ...userToUpsert,
+              id: existingUser.id,
+              createdAt: undefined, // Don't update creation time
+            })
+            .eq("id", existingUser.id)
+            .select("*")
+            .single()
 
-        return this.mockUsers[existingUserIndex]
-      } else {
+          if (error) {
+            console.error("Error updating existing user:", error)
+            throw error
+          }
+
+          // Send notification email for applied user
+          if (userData.hasApplied) {
+            await this.sendNotificationEmail(updatedUser)
+          }
+
+          return updatedUser
+        }
+      }
+
+      // Insert new user or update existing one by ID
+      if (isNewUser) {
         // Insert new user
-        const newUser = {
-          ...userToUpsert,
-          createdAt: new Date(now),
-        }
+        const { data: newUser, error } = await supabase.from("users").insert(userToUpsert).select("*").single()
 
-        this.mockUsers.push(newUser)
+        if (error) {
+          console.error("Error inserting new user:", error)
+          throw error
+        }
 
         // Send notification email for new users
         await this.sendNotificationEmail(newUser)
@@ -243,66 +303,28 @@ class DatabaseService {
         await this.awardBadge(newUser.id, BADGE_TYPES.FIRST_INTERACTION)
 
         return newUser
-      }
-    }
-
-    // Check if user already exists with this email
-    if (!userData.id && userData.email) {
-      const { data: existingUser } = await supabase.from("users").select("id").eq("email", userData.email).single()
-
-      if (existingUser) {
-        // Update the existing user instead
+      } else {
+        // Update existing user
         const { data: updatedUser, error } = await supabase
           .from("users")
           .update({
             ...userToUpsert,
-            id: existingUser.id,
             createdAt: undefined, // Don't update creation time
           })
-          .eq("id", existingUser.id)
+          .eq("id", id)
           .select("*")
           .single()
 
-        if (error) throw error
-
-        // Send notification email for applied user
-        if (userData.hasApplied) {
-          await this.sendNotificationEmail(updatedUser)
+        if (error) {
+          console.error("Error updating user:", error)
+          throw error
         }
 
         return updatedUser
       }
-    }
-
-    // Insert new user or update existing one by ID
-    if (isNewUser) {
-      // Insert new user
-      const { data: newUser, error } = await supabase.from("users").insert(userToUpsert).select("*").single()
-
-      if (error) throw error
-
-      // Send notification email for new users
-      await this.sendNotificationEmail(newUser)
-
-      // Award first interaction badge for new users
-      await this.awardBadge(newUser.id, BADGE_TYPES.FIRST_INTERACTION)
-
-      return newUser
-    } else {
-      // Update existing user
-      const { data: updatedUser, error } = await supabase
-        .from("users")
-        .update({
-          ...userToUpsert,
-          createdAt: undefined, // Don't update creation time
-        })
-        .eq("id", id)
-        .select("*")
-        .single()
-
-      if (error) throw error
-
-      return updatedUser
+    } catch (error) {
+      console.error("Error in upsertUser:", error)
+      throw error
     }
   }
 
@@ -830,4 +852,3 @@ class DatabaseService {
 
 // Export a singleton instance
 export const dbService = new DatabaseService()
-
