@@ -12,7 +12,7 @@ export function UserProfile() {
   const handleLogout = () => {
     setIsLoggingOut(true)
     localStorage.removeItem("currentUser")
-    window.location.reload()
+    window.location.href = "/"
   }
 
   return (
@@ -37,4 +37,3 @@ export function UserProfile() {
     </DropdownMenu>
   )
 }
-

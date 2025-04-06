@@ -1,6 +1,5 @@
-import { Shield, Facebook, Twitter, Instagram, Youtube, Mail, Phone, BookOpen } from "lucide-react"
-import Link from "next/link"
-import { ChatButton } from "@/components/chat-button"
+import { Shield, Facebook, Twitter, Instagram, Youtube, Mail, Phone, BookOpen, MessageSquare } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export function ImprovedFooter() {
   const currentYear = new Date().getFullYear()
@@ -22,22 +21,22 @@ export function ImprovedFooter() {
               We are dedicated to recruiting qualified individuals who are committed to public service and safety.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                 <Facebook size={20} />
                 <span className="sr-only">Facebook</span>
-              </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+              </a>
+              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                 <Twitter size={20} />
                 <span className="sr-only">Twitter</span>
-              </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+              </a>
+              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                 <Instagram size={20} />
                 <span className="sr-only">Instagram</span>
-              </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+              </a>
+              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                 <Youtube size={20} />
                 <span className="sr-only">YouTube</span>
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -46,60 +45,47 @@ export function ImprovedFooter() {
             <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="/" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Home
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  href="/#benefits"
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                  prefetch={false}
-                >
+                <a href="/#benefits" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Benefits
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  href="/#testimonials"
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                  prefetch={false}
-                >
+                <a href="/#testimonials" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Testimonials
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/#faq" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="/#faq" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   FAQ
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/awards" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="/awards" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Top Recruit Awards
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   href="/practice-tests"
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
-                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="/gi-bill" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="/gi-bill" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   G.I. Bill
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
-                  href="/discounted-housing"
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                  prefetch={false}
-                >
+                <a href="/discounted-housing" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Discounted Housing
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -109,38 +95,37 @@ export function ImprovedFooter() {
             <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link
+                <a
                   href="/practice-tests"
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
-                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Application Guide
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Fitness Standards
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Academy Information
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Career Paths
-                </Link>
+                </a>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
+                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
                   Testimonials
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -168,7 +153,12 @@ export function ImprovedFooter() {
 
             {/* Chat with Sgt. Ken button */}
             <div className="mt-4">
-              <ChatButton variant="accent" message="Chat with Sgt. Ken" className="w-full" showArrow />
+              <a href="/#chat-section">
+                <Button className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Chat with Sgt. Ken
+                </Button>
+              </a>
               <p className="text-xs text-white/50 mt-2 text-center">
                 Have questions? Our AI recruitment officer is available 24/7
               </p>

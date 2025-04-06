@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { useUser } from "@/context/user-context"
 import { UserProfile } from "@/components/user-profile"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 interface ImprovedHeaderProps {
@@ -51,13 +50,13 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
         {/* Top row with logo and theme toggle */}
         <div className="flex items-center justify-between py-2 border-b border-white/10">
           {/* Logo */}
-          <Link href="/" className="flex items-center" prefetch={false}>
+          <a href="/" className="flex items-center">
             <Shield className="h-8 w-8 text-[#FFD700] mr-2" />
             <div>
               <span className="font-bold text-white text-lg">SF Deputy Sheriff</span>
               <span className="text-[#FFD700] text-xs block -mt-1">AI Recruitment</span>
             </div>
-          </Link>
+          </a>
 
           {/* Theme toggle and mobile menu button */}
           <div className="flex items-center gap-2">
@@ -87,34 +86,22 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {!isHomePage && (
-              <Link
-                href="/"
-                className="text-white hover:text-[#FFD700] transition-colors flex items-center"
-                prefetch={false}
-              >
+              <a href="/" className="text-white hover:text-[#FFD700] transition-colors flex items-center">
                 <Home className="h-4 w-4 mr-1" /> Home
-              </Link>
+              </a>
             )}
-            <Link href="/awards" className="text-white hover:text-[#FFD700] transition-colors" prefetch={false}>
+            <a href="/awards" className="text-white hover:text-[#FFD700] transition-colors">
               Top Recruit Awards
-            </Link>
-            <Link
-              href="/practice-tests"
-              className="text-white hover:text-[#FFD700] transition-colors flex items-center"
-              prefetch={false}
-            >
+            </a>
+            <a href="/practice-tests" className="text-white hover:text-[#FFD700] transition-colors flex items-center">
               <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
-            </Link>
-            <Link href="/gi-bill" className="text-white hover:text-[#FFD700] transition-colors" prefetch={false}>
+            </a>
+            <a href="/gi-bill" className="text-white hover:text-[#FFD700] transition-colors">
               G.I. Bill
-            </Link>
-            <Link
-              href="/discounted-housing"
-              className="text-white hover:text-[#FFD700] transition-colors"
-              prefetch={false}
-            >
+            </a>
+            <a href="/discounted-housing" className="text-white hover:text-[#FFD700] transition-colors">
               Discounted Housing
-            </Link>
+            </a>
           </nav>
 
           {/* Right side buttons */}
@@ -150,47 +137,42 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-4">
                 {!isHomePage && (
-                  <Link
+                  <a
                     href="/"
                     className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                     onClick={() => setIsMenuOpen(false)}
-                    prefetch={false}
                   >
                     <Home className="h-4 w-4 mr-2" /> Home
-                  </Link>
+                  </a>
                 )}
-                <Link
+                <a
                   href="/awards"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
-                  prefetch={false}
                 >
                   Top Recruit Awards
-                </Link>
-                <Link
+                </a>
+                <a
                   href="/practice-tests"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                   onClick={() => setIsMenuOpen(false)}
-                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-2" /> Practice Tests
-                </Link>
-                <Link
+                </a>
+                <a
                   href="/gi-bill"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
-                  prefetch={false}
                 >
                   G.I. Bill
-                </Link>
-                <Link
+                </a>
+                <a
                   href="/discounted-housing"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
-                  prefetch={false}
                 >
                   Discounted Housing
-                </Link>
+                </a>
 
                 <div className="pt-4 border-t border-white/10 flex flex-col space-y-3">
                   {isLoggedIn ? (
