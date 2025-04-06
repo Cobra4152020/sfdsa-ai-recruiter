@@ -51,7 +51,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
         {/* Top row with logo and theme toggle */}
         <div className="flex items-center justify-between py-2 border-b border-white/10">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center" prefetch={false}>
             <Shield className="h-8 w-8 text-[#FFD700] mr-2" />
             <div>
               <span className="font-bold text-white text-lg">SF Deputy Sheriff</span>
@@ -87,23 +87,32 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {!isHomePage && (
-              <Link href="/" className="text-white hover:text-[#FFD700] transition-colors flex items-center">
+              <Link
+                href="/"
+                className="text-white hover:text-[#FFD700] transition-colors flex items-center"
+                prefetch={false}
+              >
                 <Home className="h-4 w-4 mr-1" /> Home
               </Link>
             )}
-            <Link href="/awards" className="text-white hover:text-[#FFD700] transition-colors">
+            <Link href="/awards" className="text-white hover:text-[#FFD700] transition-colors" prefetch={false}>
               Top Recruit Awards
             </Link>
             <Link
               href="/practice-tests"
               className="text-white hover:text-[#FFD700] transition-colors flex items-center"
+              prefetch={false}
             >
               <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
             </Link>
-            <Link href="/gi-bill" className="text-white hover:text-[#FFD700] transition-colors">
+            <Link href="/gi-bill" className="text-white hover:text-[#FFD700] transition-colors" prefetch={false}>
               G.I. Bill
             </Link>
-            <Link href="/discounted-housing" className="text-white hover:text-[#FFD700] transition-colors">
+            <Link
+              href="/discounted-housing"
+              className="text-white hover:text-[#FFD700] transition-colors"
+              prefetch={false}
+            >
               Discounted Housing
             </Link>
           </nav>
@@ -145,6 +154,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                     href="/"
                     className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                     onClick={() => setIsMenuOpen(false)}
+                    prefetch={false}
                   >
                     <Home className="h-4 w-4 mr-2" /> Home
                   </Link>
@@ -153,6 +163,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   href="/awards"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
+                  prefetch={false}
                 >
                   Top Recruit Awards
                 </Link>
@@ -160,6 +171,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   href="/practice-tests"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                   onClick={() => setIsMenuOpen(false)}
+                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-2" /> Practice Tests
                 </Link>
@@ -167,6 +179,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   href="/gi-bill"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
+                  prefetch={false}
                 >
                   G.I. Bill
                 </Link>
@@ -174,6 +187,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   href="/discounted-housing"
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
+                  prefetch={false}
                 >
                   Discounted Housing
                 </Link>
@@ -207,4 +221,3 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
     </header>
   )
 }
-

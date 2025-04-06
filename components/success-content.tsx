@@ -44,7 +44,7 @@ export function SuccessContent() {
 
       <main className="flex-1 pt-40 pb-12 bg-[#F8F5EE] dark:bg-[#121212]">
         <div className="container mx-auto px-4">
-          <Link href="/">
+          <Link href="/" prefetch={false}>
             <Button variant="ghost" className="mb-8">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
@@ -82,7 +82,7 @@ export function SuccessContent() {
                     prepare for the next steps in the process.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link href="/awards">
+                    <Link href="/awards" prefetch={false}>
                       <Button className="bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white">
                         View Top Recruit Awards
                         <ArrowRight className="ml-2 h-4 w-4" />

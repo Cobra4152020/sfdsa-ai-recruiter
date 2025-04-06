@@ -41,20 +41,22 @@ export function FloatingChatButton() {
     setHasInteracted(true)
     setIsMessageVisible(false)
 
-    // Navigate to chat section
-    const chatSection = document.getElementById("chat-section")
-    if (chatSection) {
-      const headerOffset = 80 // Approximate header height
-      const elementPosition = chatSection.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      })
-    } else {
-      // If on another page, navigate to home page with chat section
+    // Always navigate to home page with chat section if not already there
+    if (window.location.pathname !== "/") {
       window.location.href = "/#chat-section"
+    } else {
+      // If already on home page, scroll to chat section
+      const chatSection = document.getElementById("chat-section")
+      if (chatSection) {
+        const headerOffset = 80 // Approximate header height
+        const elementPosition = chatSection.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        })
+      }
     }
   }
 
@@ -109,4 +111,3 @@ export function FloatingChatButton() {
     </AnimatePresence>
   )
 }
-

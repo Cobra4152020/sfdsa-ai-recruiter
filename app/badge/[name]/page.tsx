@@ -31,7 +31,7 @@ export default function BadgePage({ params }: { params: { name: string } }) {
 
         <main className="flex-1 pt-40 pb-12 bg-[#F8F5EE] dark:bg-[#121212]">
           <div className="container mx-auto px-4">
-            <Link href="/">
+            <Link href="/" prefetch={false}>
               <Button variant="ghost" className="mb-8">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
@@ -60,7 +60,7 @@ export default function BadgePage({ params }: { params: { name: string } }) {
                   advancement. Make a difference in your community every day.
                 </p>
 
-                <Link href="/">
+                <Link href="/" prefetch={false}>
                   <Button className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold px-8 py-3 rounded-xl text-lg shadow-lg">
                     Learn More & Apply
                   </Button>

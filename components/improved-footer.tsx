@@ -22,19 +22,19 @@ export function ImprovedFooter() {
               We are dedicated to recruiting qualified individuals who are committed to public service and safety.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                 <Facebook size={20} />
                 <span className="sr-only">Facebook</span>
               </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                 <Twitter size={20} />
                 <span className="sr-only">Twitter</span>
               </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                 <Instagram size={20} />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+              <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                 <Youtube size={20} />
                 <span className="sr-only">YouTube</span>
               </Link>
@@ -46,27 +46,35 @@ export function ImprovedFooter() {
             <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="/" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/#benefits" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link
+                  href="/#benefits"
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                  prefetch={false}
+                >
                   Benefits
                 </Link>
               </li>
               <li>
-                <Link href="/#testimonials" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link
+                  href="/#testimonials"
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                  prefetch={false}
+                >
                   Testimonials
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="/#faq" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/awards" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="/awards" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Top Recruit Awards
                 </Link>
               </li>
@@ -74,17 +82,22 @@ export function ImprovedFooter() {
                 <Link
                   href="/practice-tests"
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
+                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="/gi-bill" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   G.I. Bill
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link
+                  href="/discounted-housing"
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                  prefetch={false}
+                >
                   Discounted Housing
                 </Link>
               </li>
@@ -99,32 +112,33 @@ export function ImprovedFooter() {
                 <Link
                   href="/practice-tests"
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
+                  prefetch={false}
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Application Guide
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Fitness Standards
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Academy Information
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Career Paths
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <Link href="#" className="text-white/70 hover:text-[#FFD700] transition-colors" prefetch={false}>
                   Testimonials
                 </Link>
               </li>
@@ -169,4 +183,3 @@ export function ImprovedFooter() {
     </footer>
   )
 }
-

@@ -27,20 +27,23 @@ export function ChatButton({
     if (onChatStart) {
       onChatStart()
     } else {
-      // Default behavior: scroll to chat section
-      const chatSection = document.getElementById("chat-section")
-      if (chatSection) {
-        const headerOffset = 80 // Approximate header height
-        const elementPosition = chatSection.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth",
-        })
-      } else {
+      // Default behavior: navigate to home page with chat section
+      if (window.location.pathname !== "/") {
         // If on another page, navigate to home page with chat section
         window.location.href = "/#chat-section"
+      } else {
+        // If already on home page, scroll to chat section
+        const chatSection = document.getElementById("chat-section")
+        if (chatSection) {
+          const headerOffset = 80 // Approximate header height
+          const elementPosition = chatSection.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          })
+        }
       }
     }
   }
@@ -67,4 +70,3 @@ export function ChatButton({
     </Button>
   )
 }
-

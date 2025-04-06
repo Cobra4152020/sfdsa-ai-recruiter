@@ -92,7 +92,7 @@ export function OptInForm({
 
         // Redirect to success page after a short delay
         setTimeout(() => {
-          router.push(`/success?action=apply`)
+          window.location.href = `/success?action=apply`
           onClose()
         }, 2000)
       } else {
@@ -101,7 +101,7 @@ export function OptInForm({
 
         // Redirect to success page after a short delay
         setTimeout(() => {
-          router.push(`/success?action=signup`)
+          window.location.href = `/success?action=signup`
           onClose()
 
           // Process any pending question after successful sign-up

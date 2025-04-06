@@ -114,7 +114,7 @@ function AwardsContent() {
       <main className="flex-1 bg-[#F8F5EE] dark:bg-[#121212] pt-40 pb-16">
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <Link href="/">
+            <Link href="/" prefetch={false}>
               <Button variant="ghost" className="text-[#0A3C1F] dark:text-[#FFD700] mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
               </Button>
