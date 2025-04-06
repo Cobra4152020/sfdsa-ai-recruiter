@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { OptInForm } from "@/components/opt-in-form"
-import { Trophy, Award, ArrowLeft, MessageSquare, Info } from "lucide-react"
+import { Trophy, Award, ArrowLeft, MessageSquare, Info, Shield, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { dbService } from "@/lib/db-service"
 import { EarnedBadges } from "@/components/earned-badges"
@@ -322,7 +322,10 @@ function StandaloneContent() {
         </div>
       </div>
 
-      <OptInForm isOpen={isOptInFormOpen} onClose={() => setIsOptInFormOpen(false)} isApplying={true} />
+      {/* Only render OptInForm when it's actually needed and with isApplying=false */}
+      {isOptInFormOpen && (
+        <OptInForm isOpen={isOptInFormOpen} onClose={() => setIsOptInFormOpen(false)} isApplying={false} />
+      )}
     </main>
   )
 }
@@ -339,6 +342,3 @@ function StandaloneFooter() {
     </footer>
   )
 }
-
-// Import missing components
-import { Shield, Home } from "lucide-react"

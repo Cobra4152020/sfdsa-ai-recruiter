@@ -47,8 +47,16 @@ export function OptInForm({
   // Add a flag to prevent multiple redirects
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // If user is already logged in and applying, just mark them as applied and close
+  // Check if the current page is the awards page
+  const isAwardsPage = typeof window !== "undefined" && window.location.pathname.includes("/awards")
+
+  // Only auto-redirect on non-awards pages when user is logged in and applying
   useEffect(() => {
+    // Skip auto-redirect if we're on the awards page
+    if (isAwardsPage) {
+      return
+    }
+
     if (isLoggedIn && isApplying && !hasRedirected) {
       markAsApplied().then(() => {
         // Set the redirect flag to prevent multiple redirects
@@ -61,7 +69,7 @@ export function OptInForm({
         onClose()
       })
     }
-  }, [isLoggedIn, isApplying, hasRedirected, markAsApplied, onClose, isRedirecting])
+  }, [isLoggedIn, isApplying, hasRedirected, markAsApplied, onClose, isRedirecting, isAwardsPage])
 
   // Don't show the form if the user is already logged in and it's not required or applying
   if (isLoggedIn && !required && !isApplying) {
