@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { dbService } from "@/lib/db-service"
+import { getServiceSupabase } from "@/lib/supabase-client"
 
 export async function POST(request: Request) {
   try {
@@ -9,13 +9,62 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "User ID is required" }, { status: 400 })
     }
 
-    const user = await dbService.incrementReferralCount(userId)
+    const serviceClient = getServiceSupabase()
+
+    // Get current referral count
+    const { data: user, error: fetchError } = await serviceClient
+      .from("users")
+      .select("referral_count")
+      .eq("id", userId)
+      .single()
+
+    if (fetchError) {
+      console.error("Error fetching user:", fetchError)
+      return NextResponse.json(
+        { success: false, message: `Error fetching user: ${fetchError.message}` },
+        { status: 500 },
+      )
+    }
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, user })
+    const newCount = (user.referral_count || 0) + 1
+
+    // Update referral count
+    const { data: updatedUser, error: updateError } = await serviceClient
+      .from("users")
+      .update({
+        referral_count: newCount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error("Error updating referral count:", updateError)
+      return NextResponse.json(
+        { success: false, message: `Error updating referral count: ${updateError.message}` },
+        { status: 500 },
+      )
+    }
+
+    // Convert snake_case to camelCase for client
+    const formattedUser = {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      participationCount: updatedUser.participation_count,
+      hasApplied: updatedUser.has_applied,
+      referralCount: updatedUser.referral_count,
+      createdAt: updatedUser.created_at,
+      updatedAt: updatedUser.updated_at,
+    }
+
+    return NextResponse.json({ success: true, user: formattedUser })
   } catch (error) {
     console.error("Error incrementing referral count:", error)
     return NextResponse.json(
