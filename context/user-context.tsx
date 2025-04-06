@@ -19,6 +19,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  // Add a flag to track if we've already redirected
+  const [hasRedirected, setHasRedirected] = useState(false)
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -89,6 +91,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       setCurrentUser(data.user)
       setIsLoggedIn(true)
+
+      // Set the redirect flag to prevent multiple redirects
+      setHasRedirected(true)
+
       return data.user
     } catch (error) {
       console.error("Error in setUserInfo:", error)

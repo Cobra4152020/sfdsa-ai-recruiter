@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { UserProvider } from "@/context/user-context"
 import { ImprovedHeader } from "@/components/improved-header"
@@ -13,7 +15,6 @@ import { BadgeEarnedPopup } from "@/components/badge-earned-popup"
 import { ChatButton } from "@/components/chat-button"
 import { ParticipantBadge } from "@/components/participant-badge"
 import { BadgeLegend } from "@/components/badge-legend"
-import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 function AwardsContent() {
@@ -24,6 +25,8 @@ function AwardsContent() {
   const [newBadge, setNewBadge] = useState<BadgeType | null>(null)
   const [currentUserName, setCurrentUserName] = useState("")
   const [error, setError] = useState<string | null>(null)
+  // Add a flag to prevent unwanted redirects
+  const [preventRedirect, setPreventRedirect] = useState(true)
 
   useEffect(() => {
     const fetchLeaderboards = async () => {
@@ -92,6 +95,16 @@ function AwardsContent() {
     }
   }, [])
 
+  // Add this effect to disable the redirect prevention after component mounts
+  useEffect(() => {
+    // After component is fully mounted, we can allow redirects again
+    const timer = setTimeout(() => {
+      setPreventRedirect(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
   const showOptInForm = () => {
     setIsOptInFormOpen(true)
   }
@@ -107,6 +120,12 @@ function AwardsContent() {
     return `${firstName} ${lastInitial}`
   }
 
+  // Use direct navigation for the back button
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    window.location.href = "/"
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <ImprovedHeader showOptInForm={showOptInForm} />
@@ -114,11 +133,11 @@ function AwardsContent() {
       <main className="flex-1 bg-[#F8F5EE] dark:bg-[#121212] pt-40 pb-16">
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <Link href="/" prefetch={false}>
+            <a href="/" onClick={handleBackClick}>
               <Button variant="ghost" className="text-[#0A3C1F] dark:text-[#FFD700] mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
               </Button>
-            </Link>
+            </a>
             <h1 className="text-3xl md:text-4xl font-bold text-[#0A3C1F] dark:text-[#FFD700] mb-4">
               Top Recruit Awards
             </h1>

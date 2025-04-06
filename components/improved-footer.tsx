@@ -1,8 +1,18 @@
+"use client"
+
+import type React from "react"
+
 import { Shield, Facebook, Twitter, Instagram, Youtube, Mail, Phone, BookOpen, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function ImprovedFooter() {
   const currentYear = new Date().getFullYear()
+
+  // Use direct navigation for all links
+  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    e.preventDefault()
+    window.location.href = path
+  }
 
   return (
     <footer className="bg-[#0A3C1F] dark:bg-black text-white">
@@ -45,45 +55,74 @@ export function ImprovedFooter() {
             <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/"
+                  onClick={(e) => handleNavigation(e, "/")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   Home
                 </a>
               </li>
               <li>
-                <a href="/#benefits" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/#benefits"
+                  onClick={(e) => handleNavigation(e, "/#benefits")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   Benefits
                 </a>
               </li>
               <li>
-                <a href="/#testimonials" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/#testimonials"
+                  onClick={(e) => handleNavigation(e, "/#testimonials")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   Testimonials
                 </a>
               </li>
               <li>
-                <a href="/#faq" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/#faq"
+                  onClick={(e) => handleNavigation(e, "/#faq")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   FAQ
                 </a>
               </li>
               <li>
-                <a href="/awards" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/awards"
+                  onClick={(e) => handleNavigation(e, "/awards")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   Top Recruit Awards
                 </a>
               </li>
               <li>
                 <a
                   href="/practice-tests"
+                  onClick={(e) => handleNavigation(e, "/practice-tests")}
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
                 </a>
               </li>
               <li>
-                <a href="/gi-bill" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/gi-bill"
+                  onClick={(e) => handleNavigation(e, "/gi-bill")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   G.I. Bill
                 </a>
               </li>
               <li>
-                <a href="/discounted-housing" className="text-white/70 hover:text-[#FFD700] transition-colors">
+                <a
+                  href="/discounted-housing"
+                  onClick={(e) => handleNavigation(e, "/discounted-housing")}
+                  className="text-white/70 hover:text-[#FFD700] transition-colors"
+                >
                   Discounted Housing
                 </a>
               </li>
@@ -97,6 +136,7 @@ export function ImprovedFooter() {
               <li>
                 <a
                   href="/practice-tests"
+                  onClick={(e) => handleNavigation(e, "/practice-tests")}
                   className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
                 >
                   <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
@@ -153,7 +193,7 @@ export function ImprovedFooter() {
 
             {/* Chat with Sgt. Ken button */}
             <div className="mt-4">
-              <a href="/#chat-section">
+              <a href="/#chat-section" onClick={(e) => handleNavigation(e, "/#chat-section")}>
                 <Button className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
                   Chat with Sgt. Ken

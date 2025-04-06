@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,16 +42,26 @@ export function OptInForm({
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
+  // Add a flag to track if we've already redirected
+  const [hasRedirected, setHasRedirected] = useState(false)
+  // Add a flag to prevent multiple redirects
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   // If user is already logged in and applying, just mark them as applied and close
-  if (isLoggedIn && isApplying) {
-    markAsApplied().then(() => {
-      // Redirect to success page
-      window.location.href = `/success?action=apply`
-      onClose()
-    })
-    return null
-  }
+  useEffect(() => {
+    if (isLoggedIn && isApplying && !hasRedirected) {
+      markAsApplied().then(() => {
+        // Set the redirect flag to prevent multiple redirects
+        setHasRedirected(true)
+        // Redirect to success page
+        if (!isRedirecting) {
+          setIsRedirecting(true)
+          window.location.href = `/success?action=apply`
+        }
+        onClose()
+      })
+    }
+  }, [isLoggedIn, isApplying, hasRedirected, markAsApplied, onClose, isRedirecting])
 
   // Don't show the form if the user is already logged in and it's not required or applying
   if (isLoggedIn && !required && !isApplying) {
@@ -90,7 +100,10 @@ export function OptInForm({
 
         // Redirect to success page after a short delay
         setTimeout(() => {
-          window.location.href = `/success?action=apply`
+          if (!isRedirecting) {
+            setIsRedirecting(true)
+            window.location.href = `/success?action=apply`
+          }
           onClose()
         }, 2000)
       } else {
@@ -99,7 +112,10 @@ export function OptInForm({
 
         // Redirect to success page after a short delay
         setTimeout(() => {
-          window.location.href = `/success?action=signup`
+          if (!isRedirecting) {
+            setIsRedirecting(true)
+            window.location.href = `/success?action=signup`
+          }
           onClose()
 
           // Process any pending question after successful sign-up
