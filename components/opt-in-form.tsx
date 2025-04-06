@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
 
 interface OptInFormProps {
   isOpen: boolean
@@ -35,7 +34,6 @@ export function OptInForm({
   isApplying = false,
 }: OptInFormProps) {
   const { setUserInfo, isLoggedIn, markAsApplied } = useUser()
-  const router = useRouter()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -49,7 +47,7 @@ export function OptInForm({
   if (isLoggedIn && isApplying) {
     markAsApplied().then(() => {
       // Redirect to success page
-      router.push(`/success?action=apply`)
+      window.location.href = `/success?action=apply`
       onClose()
     })
     return null

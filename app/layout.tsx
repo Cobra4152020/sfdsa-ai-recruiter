@@ -4,6 +4,7 @@ import "./globals.css"
 import { dbService } from "@/lib/db-service"
 import { FloatingChatButton } from "@/components/floating-chat-button"
 import { ThemeProvider } from "@/components/theme-provider"
+import { UserProvider } from "@/context/user-context"
 
 // Initialize the database tables
 if (typeof window === "undefined") {
@@ -32,14 +33,12 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {children}
-          <FloatingChatButton />
+          <UserProvider>
+            {children}
+            <FloatingChatButton />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'

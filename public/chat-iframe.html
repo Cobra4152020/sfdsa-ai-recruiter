@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+    }
+    
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    
+    .user-message {
+      align-self: flex-end;
+      background-color: #0A3C1F;
+      color: white;
+      border-bottom-right-radius: 0.25rem;
+      margin-left: auto;
+    }
+    
+    .assistant-message {
+      align-self: flex-start;
+      background-color: #e5e5e5;
+      color: #333;
+      border-bottom-left-radius: 0.25rem;
+    }
+    
+    .input-container {
+      display: flex;
+      padding: 1rem;
+      border-top: 1px solid #e5e5e5;
+      background-color: white;
+    }
+    
+    .input-field {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .send-button {
+      padding: 0.75rem 1.5rem;
+      background-color: #0A3C1F;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .send-button:hover {
+      background-color: #0c4d27;
+    }
+    
+    .send-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .welcome-message {
+      text-align: center;
+      margin: 2rem 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container" id="chatContainer">
+    <div class="welcome-message">
+      <h2>Welcome to the SF Deputy Sheriff Recruitment Assistant</h2>
+      <p>Ask me anything about becoming a Deputy Sheriff!</p>
+    </div>
+    <div class="message assistant-message">
+      Hello! I'm your recruitment assistant. I can answer questions about the application process, requirements, benefits, and more. How can I help you today?
+    </div>
+  </div>
+  
+  <div class="input-container">
+    <input type="text" class="input-field" id="userInput" placeholder="Type your question here..." aria-label="Your message">
+    <button class="send-button" id="sendButton">Send</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatContainer = document.getElementById('chatContainer');
+      const userInput = document.getElementById('userInput');
+      const sendButton = document.getElementById('sendButton');
+      
+      // Sample responses for common questions
+      const responses = {
+        "requirements": "To become a Deputy Sheriff, you need to be at least 21 years old, have a high school diploma or GED, be a US citizen or permanent resident who has applied for citizenship, have a valid driver's license, and pass background checks and physical tests.",
+        "salary": "Deputy Sheriffs start at approximately $80,000-$100,000 per year, with excellent benefits including health insurance, retirement plans, and paid time off.",
+        "application": "The application process includes submitting an online application, taking written and physical tests, completing an interview, passing a background check, and completing medical and psychological evaluations.",
+        "training": "After being hired, you'll attend a 6-month academy followed by field training. The academy covers law enforcement techniques, firearms training, defensive tactics, and more.",
+        "benefits": "Benefits include health, dental, and vision insurance, retirement plans, paid vacation and sick leave, tuition reimbursement, and opportunities for advancement.",
+        "schedule": "Deputies typically work 4 days on, 3 days off in 10-hour shifts, though schedules may vary based on assignment and department needs.",
+        "default": "I don't have specific information on that topic. For more detailed information, I recommend visiting the official San Francisco Sheriff's Office website or contacting their recruitment team directly."
+      };
+      
+      function addMessage(text, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
+        messageDiv.textContent = text;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+      
+      function getResponse(question) {
+        question = question.toLowerCase();
+        
+        if (question.includes('requirement') || question.includes('qualify') || question.includes('eligible')) {
+          return responses.requirements;
+        } else if (question.includes('salary') || question.includes('pay') || question.includes('money') || question.includes('earn')) {
+          return responses.salary;
+        } else if (question.includes('apply') || question.includes('application') || question.includes('process')) {
+          return responses.application;
+        } else if (question.includes('train') || question.includes('academy')) {
+          return responses.training;
+        } else if (question.includes('benefit') || question.includes('insurance') || question.includes('retirement')) {
+          return responses.benefits;
+        } else if (question.includes('schedule') || question.includes('hours') || question.includes('shift')) {
+          return responses.schedule;
+        } else {
+          return responses.default;
+        }
+      }
+      
+      function handleSend() {
+        const question = userInput.value.trim();
+        if (question === '') return;
+        
+        // Add user message
+        addMessage(question, true);
+        
+        // Notify parent window about user interaction
+        window.parent.postMessage(JSON.stringify({
+          action: 'userInteraction',
+          question: question
+        }), '*');
+        
+        // Clear input
+        userInput.value = '';
+        
+        // Simulate thinking
+        setTimeout(() => {
+          // Add assistant response
+          const response = getResponse(question);
+          addMessage(response, false);
+        }, 1000);
+      }
+      
+      // Event listeners
+      sendButton.addEventListener('click', handleSend);
+      
+      userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          handleSend();
+        }
+      });
+      
+      // Listen for messages from parent window
+      window.addEventListener('message', function(event) {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.action === 'processPendingQuestion' && data.question) {
+            // Process the pending question after user signs up
+            userInput.value = data.question;
+            handleSend();
+          }
+        } catch (error) {
+          // Ignore parsing errors
+        }
+      });
+    });
+  </script>
+</body>
+</html>
