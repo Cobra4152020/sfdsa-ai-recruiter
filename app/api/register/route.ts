@@ -38,8 +38,8 @@ export async function POST(request: Request) {
           name,
           email,
           phone: phone || null,
-          has_applied: isApplying || false,
-          updated_at: new Date().toISOString(),
+          hasapplied: isApplying || false,
+          updatedat: new Date().toISOString(),
         })
         .eq("id", existingUser.id)
         .select()
@@ -63,11 +63,11 @@ export async function POST(request: Request) {
           name,
           email,
           phone: phone || null,
-          participation_count: 0,
-          has_applied: isApplying || false,
-          referral_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          participationcount: 0,
+          hasapplied: isApplying || false,
+          referralcount: 0,
+          createdat: new Date().toISOString(),
+          updatedat: new Date().toISOString(),
         })
         .select()
         .single()
@@ -83,17 +83,17 @@ export async function POST(request: Request) {
       user = newUser
     }
 
-    // Convert snake_case to camelCase for client
+    // Convert database column names to camelCase for client
     const formattedUser = {
       id: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
-      participationCount: user.participation_count,
-      hasApplied: user.has_applied,
-      referralCount: user.referral_count,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      participationCount: user.participationcount,
+      hasApplied: user.hasapplied,
+      referralCount: user.referralcount,
+      createdAt: user.createdat,
+      updatedAt: user.updatedat,
     }
 
     // Send notification email if needed

@@ -213,11 +213,11 @@ class DatabaseService {
         name: userData.name || "",
         email: userData.email || "",
         phone: userData.phone || "",
-        participationCount: userData.participationCount || 0,
-        hasApplied: userData.hasApplied || false,
-        referralCount: userData.referralCount || 0,
-        createdAt: userData.createdAt || now,
-        updatedAt: now,
+        participationcount: userData.participationCount || 0,
+        hasapplied: userData.hasApplied || false,
+        referralcount: userData.referralCount || 0,
+        createdat: userData.createdAt || now,
+        updatedat: now,
       }
 
       console.log("User data to upsert:", userToUpsert)
@@ -287,7 +287,7 @@ class DatabaseService {
             .update({
               ...userToUpsert,
               id: existingUser.id,
-              createdAt: undefined, // Don't update creation time
+              createdat: undefined, // Don't update creation time
             })
             .eq("id", existingUser.id)
             .select("*")
@@ -332,7 +332,7 @@ class DatabaseService {
           .from("users")
           .update({
             ...userToUpsert,
-            createdAt: undefined, // Don't update creation time
+            createdat: undefined, // Don't update creation time
           })
           .eq("id", id)
           .select("*")
@@ -416,17 +416,17 @@ class DatabaseService {
 
     const { data: user, error: fetchError } = await serviceClient
       .from("users")
-      .select("participationCount")
+      .select("participationcount")
       .eq("id", userId)
       .single()
 
     if (fetchError || !user) return null
 
-    const newCount = (user.participationCount || 0) + 1
+    const newCount = (user.participationcount || 0) + 1
 
     const { data: updatedUser, error: updateError } = await serviceClient
       .from("users")
-      .update({ participationCount: newCount, updatedAt: new Date().toISOString() })
+      .update({ participationcount: newCount, updatedat: new Date().toISOString() })
       .eq("id", userId)
       .select("*")
       .single()

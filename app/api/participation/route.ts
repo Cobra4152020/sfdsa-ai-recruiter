@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     // Get current participation count
     const { data: user, error: fetchError } = await serviceClient
       .from("users")
-      .select("participation_count")
+      .select("participationcount")
       .eq("id", userId)
       .single()
 
@@ -30,14 +30,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
     }
 
-    const newCount = (user.participation_count || 0) + 1
+    const newCount = (user.participationcount || 0) + 1
 
     // Update participation count
     const { data: updatedUser, error: updateError } = await serviceClient
       .from("users")
       .update({
-        participation_count: newCount,
-        updated_at: new Date().toISOString(),
+        participationcount: newCount,
+        updatedat: new Date().toISOString(),
       })
       .eq("id", userId)
       .select()
@@ -51,17 +51,17 @@ export async function POST(request: Request) {
       )
     }
 
-    // Convert snake_case to camelCase for client
+    // Convert database column names to camelCase for client
     const formattedUser = {
       id: updatedUser.id,
       name: updatedUser.name,
       email: updatedUser.email,
       phone: updatedUser.phone,
-      participationCount: updatedUser.participation_count,
-      hasApplied: updatedUser.has_applied,
-      referralCount: updatedUser.referral_count,
-      createdAt: updatedUser.created_at,
-      updatedAt: updatedUser.updated_at,
+      participationCount: updatedUser.participationcount,
+      hasApplied: updatedUser.hasapplied,
+      referralCount: updatedUser.referralcount,
+      createdAt: updatedUser.createdat,
+      updatedAt: updatedUser.updatedat,
     }
 
     return NextResponse.json({ success: true, user: formattedUser })

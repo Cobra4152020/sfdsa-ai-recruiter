@@ -16,8 +16,8 @@ export async function GET(request: Request) {
       const { data: applicants, error } = await serviceClient
         .from("users")
         .select("*")
-        .eq("has_applied", true)
-        .order("participation_count", { ascending: false })
+        .eq("hasapplied", true)
+        .order("participationcount", { ascending: false })
         .limit(limit)
 
       if (error) {
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       const { data: participants, error } = await serviceClient
         .from("users")
         .select("*")
-        .order("participation_count", { ascending: false })
+        .order("participationcount", { ascending: false })
         .limit(limit)
 
       if (error) {
@@ -48,17 +48,17 @@ export async function GET(request: Request) {
       data = participants
     }
 
-    // Convert snake_case to camelCase for client
+    // Convert database column names to camelCase for client
     const formattedUsers = data.map((user) => ({
       id: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
-      participationCount: user.participation_count,
-      hasApplied: user.has_applied,
-      referralCount: user.referral_count,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      participationCount: user.participationcount,
+      hasApplied: user.hasapplied,
+      referralCount: user.referralcount,
+      createdAt: user.createdat,
+      updatedAt: user.updatedat,
     }))
 
     return NextResponse.json({ success: true, users: formattedUsers })

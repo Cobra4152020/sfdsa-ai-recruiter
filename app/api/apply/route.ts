@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     const { data: updatedUser, error: updateError } = await serviceClient
       .from("users")
       .update({
-        has_applied: true,
-        updated_at: new Date().toISOString(),
+        hasapplied: true,
+        updatedat: new Date().toISOString(),
       })
       .eq("id", userId)
       .select()
@@ -34,17 +34,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 })
     }
 
-    // Convert snake_case to camelCase for client
+    // Convert database column names to camelCase for client
     const formattedUser = {
       id: updatedUser.id,
       name: updatedUser.name,
       email: updatedUser.email,
       phone: updatedUser.phone,
-      participationCount: updatedUser.participation_count,
-      hasApplied: updatedUser.has_applied,
-      referralCount: updatedUser.referral_count,
-      createdAt: updatedUser.created_at,
-      updatedAt: updatedUser.updated_at,
+      participationCount: updatedUser.participationcount,
+      hasApplied: updatedUser.hasapplied,
+      referralCount: updatedUser.referralcount,
+      createdAt: updatedUser.createdat,
+      updatedAt: updatedUser.updatedat,
     }
 
     // Send notification email if needed
