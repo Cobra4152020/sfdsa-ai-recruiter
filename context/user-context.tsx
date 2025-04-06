@@ -21,6 +21,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false)
   // Add a flag to track if we've already redirected
   const [hasRedirected, setHasRedirected] = useState(false)
+  // Add a flag to prevent multiple redirects
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   // Load user from localStorage on mount
   useEffect(() => {
@@ -29,6 +31,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const savedUser = localStorage.getItem("currentUser")
         if (savedUser) {
           const user = JSON.parse(savedUser)
+          // Ensure user has at least 1 participation count
+          if (!user.participationCount || user.participationCount < 1) {
+            user.participationCount = 1
+          }
           setCurrentUser(user)
           setIsLoggedIn(true)
         }
@@ -89,13 +95,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
         throw new Error("Failed to register user")
       }
 
-      setCurrentUser(data.user)
+      // Ensure user has at least 1 participation count
+      const userData = {
+        ...data.user,
+        participationCount: Math.max(data.user.participationCount || 0, 1),
+      }
+
+      setCurrentUser(userData)
       setIsLoggedIn(true)
 
       // Set the redirect flag to prevent multiple redirects
       setHasRedirected(true)
 
-      return data.user
+      return userData
     } catch (error) {
       console.error("Error in setUserInfo:", error)
       throw error
@@ -121,9 +133,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
           if (data.success && data.user) {
             setCurrentUser(data.user)
           }
+        } else {
+          // If API call fails, still increment locally to ensure UI updates
+          setCurrentUser((prev) => {
+            if (!prev) return prev
+            const newCount = (prev.participationCount || 0) + 1
+            return {
+              ...prev,
+              participationCount: newCount,
+            }
+          })
         }
       } catch (error) {
         console.error("Error incrementing participation:", error)
+        // Still increment locally on error
+        setCurrentUser((prev) => {
+          if (!prev) return prev
+          const newCount = (prev.participationCount || 0) + 1
+          return {
+            ...prev,
+            participationCount: newCount,
+          }
+        })
       }
     }
   }
@@ -147,9 +178,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
           if (data.success && data.user) {
             setCurrentUser(data.user)
           }
+        } else {
+          // If API call fails, still update locally
+          setCurrentUser((prev) => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              hasApplied: true,
+            }
+          })
         }
       } catch (error) {
         console.error("Error marking as applied:", error)
+        // Still update locally on error
+        setCurrentUser((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            hasApplied: true,
+          }
+        })
       }
     }
   }

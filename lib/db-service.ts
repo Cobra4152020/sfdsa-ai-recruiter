@@ -555,6 +555,9 @@ class DatabaseService {
     try {
       // If in mock mode, return mock data
       if (isMockMode) {
+        // Add the current user from localStorage if available
+        this.addCurrentUserToMockData()
+
         // Sort by participation count and limit
         const sortedUsers = [...this.mockUsers]
           .sort((a, b) => b.participationCount - a.participationCount)
@@ -607,6 +610,9 @@ class DatabaseService {
     try {
       // If in mock mode, return mock data
       if (isMockMode) {
+        // Add the current user from localStorage if available
+        this.addCurrentUserToMockData()
+
         // Filter applied users, sort by participation count and limit
         const sortedUsers = [...this.mockUsers]
           .filter((user) => user.hasApplied)
@@ -650,6 +656,44 @@ class DatabaseService {
     } catch (error) {
       console.error("Error fetching top applicants data:", error)
       return []
+    }
+  }
+
+  // Add the current user from localStorage to mock data if available
+  private addCurrentUserToMockData() {
+    if (typeof window !== "undefined") {
+      try {
+        const savedUser = localStorage.getItem("currentUser")
+        if (savedUser) {
+          const user = JSON.parse(savedUser)
+
+          // Check if this user is already in our mock data
+          const existingUserIndex = this.mockUsers.findIndex(
+            (mockUser) => mockUser.id === user.id || mockUser.email === user.email,
+          )
+
+          if (existingUserIndex === -1) {
+            // Add the user to mock data if not already present
+            this.mockUsers.push({
+              ...user,
+              // Ensure the user has at least 1 participation count to show up in leaderboards
+              participationCount: user.participationCount || 1,
+            })
+            console.log("Added current user to mock data:", user.name)
+          } else {
+            // Update the existing user with the latest data
+            this.mockUsers[existingUserIndex] = {
+              ...this.mockUsers[existingUserIndex],
+              ...user,
+              // Ensure participation count is at least 1
+              participationCount: Math.max(user.participationCount || 0, 1),
+            }
+            console.log("Updated current user in mock data:", user.name)
+          }
+        }
+      } catch (error) {
+        console.error("Error adding current user to mock data:", error)
+      }
     }
   }
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Trophy, Award } from "lucide-react"
 import { dbService } from "@/lib/db-service"
+import { useUser } from "@/context/user-context"
 
 interface TopRecruit {
   id: string
@@ -18,6 +19,7 @@ interface TopRecruitsTickerProps {
 }
 
 export function TopRecruitsTicker({ showOptInForm }: TopRecruitsTickerProps) {
+  const { currentUser, isLoggedIn } = useUser()
   const [topRecruits, setTopRecruits] = useState<TopRecruit[]>([
     { id: "1", name: "Michael R.", participationCount: 42, hasApplied: true },
     { id: "2", name: "Sarah L.", participationCount: 38, hasApplied: true },
@@ -50,6 +52,21 @@ export function TopRecruitsTicker({ showOptInForm }: TopRecruitsTickerProps) {
             }
           })
           setTopRecruits(formattedLeaders)
+        } else if (isLoggedIn && currentUser) {
+          // If no leaders but we have a current user, add them to the ticker
+          const nameParts = currentUser.name.split(" ")
+          const firstName = nameParts[0]
+          const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1].charAt(0) + "." : ""
+
+          // Create a default entry with the current user
+          setTopRecruits([
+            {
+              id: currentUser.id,
+              name: `${firstName} ${lastInitial}`,
+              participationCount: currentUser.participationCount || 1,
+              hasApplied: currentUser.hasApplied || false,
+            },
+          ])
         }
       } catch (error) {
         console.error("Error fetching top recruits for ticker:", error)
@@ -57,7 +74,7 @@ export function TopRecruitsTicker({ showOptInForm }: TopRecruitsTickerProps) {
     }
 
     fetchTopRecruits()
-  }, [])
+  }, [currentUser, isLoggedIn])
 
   // Reset animation periodically to create continuous effect
   useEffect(() => {
@@ -101,4 +118,3 @@ export function TopRecruitsTicker({ showOptInForm }: TopRecruitsTickerProps) {
     </div>
   )
 }
-
