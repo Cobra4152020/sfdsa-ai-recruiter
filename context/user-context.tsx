@@ -60,19 +60,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Set user info
   const setUserInfo = async (name: string, email: string, phone: string): Promise<UserData> => {
-    const userData = await dbService.upsertUser({
-      name,
-      email,
-      phone,
-      id: currentUser?.id,
-      participationCount: currentUser?.participationCount || 0,
-      hasApplied: currentUser?.hasApplied || false,
-      createdAt: currentUser?.createdAt || new Date(),
-    })
+    try {
+      console.log("Starting user creation with:", { name, email, phone })
+      const userData = await dbService.upsertUser({
+        name,
+        email,
+        phone,
+        id: currentUser?.id,
+        participationCount: currentUser?.participationCount || 0,
+        hasApplied: currentUser?.hasApplied || false,
+        createdAt: currentUser?.createdAt || new Date(),
+      })
 
-    setCurrentUser(userData)
-    setIsLoggedIn(true)
-    return userData
+      setCurrentUser(userData)
+      setIsLoggedIn(true)
+      return userData
+    } catch (error) {
+      console.error("Error in setUserInfo:", error)
+      throw error
+    }
   }
 
   // Increment participation
@@ -129,4 +135,3 @@ export function useUser() {
   }
   return context
 }
-

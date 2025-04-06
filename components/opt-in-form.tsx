@@ -114,7 +114,7 @@ export function OptInForm({
       }
     } catch (err) {
       console.error("Detailed error in form submission:", err)
-      setError("Failed to save your information. Please try again.")
+      setError(`Failed to save your information: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setIsSubmitting(false)
     }

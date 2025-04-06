@@ -29,9 +29,9 @@ export const BADGE_TYPES = {
 export const PARTICIPANT_BADGE_TYPES = {
   HARD_CHARGER: "hard_charger",
   DEEP_DIVER: "deep_diver",
-  QUICK_LEARNER: "quick_learner",
-  PERSISTENT_EXPLORER: "persistent_explorer",
-  DEDICATED_APPLICANT: "dedicated_applicant",
+  QUICK_LEARNER: "quick-learner",
+  PERSISTENT_EXPLORER: "persistent-explorer",
+  DEDICATED_APPLICANT: "dedicated-applicant",
 }
 
 // Participant badge type mapping
@@ -220,6 +220,8 @@ class DatabaseService {
         updatedAt: now,
       }
 
+      console.log("User data to upsert:", userToUpsert)
+
       // If in mock mode, handle with mock implementation
       if (isMockMode) {
         console.log("Using mock implementation for upsertUser")
@@ -266,6 +268,7 @@ class DatabaseService {
 
       // Check if user already exists with this email
       if (!userData.id && userData.email) {
+        console.log("Checking for existing user with email:", userData.email)
         const { data: existingUser, error: findError } = await serviceClient
           .from("users")
           .select("id")
@@ -277,6 +280,7 @@ class DatabaseService {
         }
 
         if (existingUser) {
+          console.log("Found existing user:", existingUser)
           // Update the existing user instead
           const { data: updatedUser, error } = await serviceClient
             .from("users")
@@ -291,7 +295,7 @@ class DatabaseService {
 
           if (error) {
             console.error("Error updating existing user:", error)
-            throw error
+            throw new Error(`Error updating user: ${error.message}`)
           }
 
           // Send notification email for applied user
@@ -305,12 +309,13 @@ class DatabaseService {
 
       // Insert new user or update existing one by ID
       if (isNewUser) {
+        console.log("Inserting new user")
         // Insert new user
         const { data: newUser, error } = await serviceClient.from("users").insert(userToUpsert).select("*").single()
 
         if (error) {
           console.error("Error inserting new user:", error)
-          throw error
+          throw new Error(`Error inserting new user: ${error.message}`)
         }
 
         // Send notification email for new users
@@ -321,6 +326,7 @@ class DatabaseService {
 
         return newUser
       } else {
+        console.log("Updating existing user with ID:", id)
         // Update existing user
         const { data: updatedUser, error } = await serviceClient
           .from("users")
@@ -334,7 +340,7 @@ class DatabaseService {
 
         if (error) {
           console.error("Error updating user:", error)
-          throw error
+          throw new Error(`Error updating user: ${error.message}`)
         }
 
         return updatedUser
