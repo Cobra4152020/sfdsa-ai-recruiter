@@ -38,6 +38,11 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
     setTheme(theme === "dark" ? "light" : "dark")
   }
 
+  // Direct navigation function - force a full page load
+  const goToPage = (path: string) => {
+    window.location.href = path
+  }
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -50,7 +55,14 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
         {/* Top row with logo and theme toggle */}
         <div className="flex items-center justify-between py-2 border-b border-white/10">
           {/* Logo */}
-          <a href="/" className="flex items-center">
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault()
+              goToPage("/")
+            }}
+            className="flex items-center"
+          >
             <Shield className="h-8 w-8 text-[#FFD700] mr-2" />
             <div>
               <span className="font-bold text-white text-lg">SF Deputy Sheriff</span>
@@ -86,20 +98,55 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {!isHomePage && (
-              <a href="/" className="text-white hover:text-[#FFD700] transition-colors flex items-center">
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault()
+                  goToPage("/")
+                }}
+                className="text-white hover:text-[#FFD700] transition-colors flex items-center"
+              >
                 <Home className="h-4 w-4 mr-1" /> Home
               </a>
             )}
-            <a href="/awards" className="text-white hover:text-[#FFD700] transition-colors">
+            <a
+              href="/awards"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/awards")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors"
+            >
               Top Recruit Awards
             </a>
-            <a href="/practice-tests" className="text-white hover:text-[#FFD700] transition-colors flex items-center">
+            <a
+              href="/practice-tests"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/practice-tests")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors flex items-center"
+            >
               <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
             </a>
-            <a href="/gi-bill" className="text-white hover:text-[#FFD700] transition-colors">
+            <a
+              href="/gi-bill"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/gi-bill")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors"
+            >
               G.I. Bill
             </a>
-            <a href="/discounted-housing" className="text-white hover:text-[#FFD700] transition-colors">
+            <a
+              href="/discounted-housing"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/discounted-housing")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors"
+            >
               Discounted Housing
             </a>
           </nav>
@@ -139,37 +186,57 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 {!isHomePage && (
                   <a
                     href="/"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setIsMenuOpen(false)
+                      goToPage("/")
+                    }}
                     className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
-                    onClick={() => setIsMenuOpen(false)}
                   >
                     <Home className="h-4 w-4 mr-2" /> Home
                   </a>
                 )}
                 <a
                   href="/awards"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/awards")
+                  }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   Top Recruit Awards
                 </a>
                 <a
                   href="/practice-tests"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/practice-tests")
+                  }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   <BookOpen className="h-4 w-4 mr-2" /> Practice Tests
                 </a>
                 <a
                   href="/gi-bill"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/gi-bill")
+                  }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   G.I. Bill
                 </a>
                 <a
                   href="/discounted-housing"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/discounted-housing")
+                  }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   Discounted Housing
                 </a>
