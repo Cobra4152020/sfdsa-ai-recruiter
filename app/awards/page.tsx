@@ -9,6 +9,7 @@ import { EarnedBadges } from "@/components/earned-badges"
 import { ParticipantBadge } from "@/components/participant-badge"
 import { BadgeLegend } from "@/components/badge-legend"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useUser } from "@/context/user-context"
 
 // Create a standalone page component that doesn't depend on any context or state
 export default function AwardsPage() {
@@ -67,6 +68,7 @@ function StandaloneHeader() {
 
 // Standalone content component
 function StandaloneContent() {
+  const { currentUser, isLoggedIn } = useUser()
   const [isOptInFormOpen, setIsOptInFormOpen] = useState(false)
   const [participationLeaders, setParticipationLeaders] = useState<any[]>([])
   const [applicantLeaders, setApplicantLeaders] = useState<any[]>([])
@@ -79,8 +81,11 @@ function StandaloneContent() {
         setIsLoading(true)
         setError(null)
 
+        let participation: any[] = []
+        let applicants: any[] = []
+
         try {
-          const participation = await dbService.getParticipationLeaderboard(10)
+          participation = await dbService.getParticipationLeaderboard(10)
           setParticipationLeaders(participation)
         } catch (error) {
           console.error("Error fetching participation leaderboard:", error)
@@ -89,12 +94,35 @@ function StandaloneContent() {
         }
 
         try {
-          const applicants = await dbService.getApplicantsLeaderboard(10)
+          applicants = await dbService.getApplicantsLeaderboard(10)
           setApplicantLeaders(applicants)
         } catch (error) {
           console.error("Error fetching applicants leaderboard:", error)
           setError("Failed to load applicants leaderboard")
           setApplicantLeaders([])
+        }
+
+        // If no participants but we have a current user, add them to the leaderboards
+        if (isLoggedIn && currentUser) {
+          if (participation.length === 0) {
+            // Add current user to participation leaderboard
+            const userWithBadges = {
+              ...currentUser,
+              badges: await dbService.getUserBadges(currentUser.id),
+              participantBadgeType: dbService.getParticipantBadgeType(currentUser),
+            }
+            setParticipationLeaders([userWithBadges])
+          }
+
+          if (applicants.length === 0 && currentUser.hasApplied) {
+            // Add current user to applicants leaderboard if they've applied
+            const userWithBadges = {
+              ...currentUser,
+              badges: await dbService.getUserBadges(currentUser.id),
+              participantBadgeType: dbService.getParticipantBadgeType(currentUser),
+            }
+            setApplicantLeaders([userWithBadges])
+          }
         }
       } catch (error) {
         console.error("Error in fetchLeaderboards:", error)
@@ -105,7 +133,7 @@ function StandaloneContent() {
     }
 
     fetchLeaderboards()
-  }, [])
+  }, [currentUser, isLoggedIn])
 
   const showOptInForm = () => {
     setIsOptInFormOpen(true)
@@ -217,7 +245,21 @@ function StandaloneContent() {
               </div>
             ) : (
               <div className="p-8 text-center text-[#0A3C1F]/60 dark:text-white/60">
-                No participants yet. Be the first to join!
+                {isLoggedIn ? (
+                  <div>
+                    <p className="mb-2">Start chatting with Sgt. Ken to earn points and appear on the leaderboard!</p>
+                    <a href="/#chat-section">
+                      <Button className="bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white">Chat with Sgt. Ken</Button>
+                    </a>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="mb-2">No participants yet. Be the first to join!</p>
+                    <Button onClick={showOptInForm} className="bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white">
+                      Sign Up
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -288,7 +330,21 @@ function StandaloneContent() {
               </div>
             ) : (
               <div className="p-8 text-center text-[#0A3C1F]/60 dark:text-white/60">
-                No applicants yet. Be the first to apply!
+                {isLoggedIn ? (
+                  <div>
+                    <p className="mb-2">Ready to take the next step? Apply now to join our top applicants!</p>
+                    <Button onClick={showOptInForm} className="bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white">
+                      Apply Now
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="mb-2">No applicants yet. Be the first to apply!</p>
+                    <Button onClick={showOptInForm} className="bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white">
+                      Apply Now
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>

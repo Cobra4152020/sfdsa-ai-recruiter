@@ -28,7 +28,7 @@ export const BADGE_TYPES = {
 // Participant badge types
 export const PARTICIPANT_BADGE_TYPES = {
   HARD_CHARGER: "hard_charger",
-  DEEP_DIVER: "deep_diver",
+  DEEP_DIVER: "deep-diver",
   QUICK_LEARNER: "quick-learner",
   PERSISTENT_EXPLORER: "persistent-explorer",
   DEDICATED_APPLICANT: "dedicated-applicant",
