@@ -1,11 +1,11 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type UserData, dbService } from "@/lib/db-service"
+import type { UserData } from "@/lib/db-service"
 
 interface UserContextType {
   currentUser: UserData | null
-  setUserInfo: (name: string, email: string, phone: string) => Promise<UserData>
+  setUserInfo: (name: string, email: string, phone: string, isApplying?: boolean) => Promise<UserData>
   incrementParticipation: () => Promise<void>
   markAsApplied: () => Promise<void>
   incrementReferralCount: () => Promise<void>
@@ -58,55 +58,118 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUser])
 
-  // Set user info
-  const setUserInfo = async (name: string, email: string, phone: string): Promise<UserData> => {
+  // Set user info - now using the API route instead of direct DB access
+  const setUserInfo = async (name: string, email: string, phone: string, isApplying = false): Promise<UserData> => {
     try {
-      console.log("Starting user creation with:", { name, email, phone })
-      const userData = await dbService.upsertUser({
-        name,
-        email,
-        phone,
-        id: currentUser?.id,
-        participationCount: currentUser?.participationCount || 0,
-        hasApplied: currentUser?.hasApplied || false,
-        createdAt: currentUser?.createdAt || new Date(),
+      console.log("Starting user registration with API route:", { name, email, phone, isApplying })
+
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          isApplying,
+        }),
       })
 
-      setCurrentUser(userData)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to register user")
+      }
+
+      const data = await response.json()
+
+      if (!data.success || !data.user) {
+        throw new Error("Failed to register user")
+      }
+
+      setCurrentUser(data.user)
       setIsLoggedIn(true)
-      return userData
+      return data.user
     } catch (error) {
       console.error("Error in setUserInfo:", error)
       throw error
     }
   }
 
-  // Increment participation
+  // Increment participation - this should also be moved to an API route
   const incrementParticipation = async () => {
     if (currentUser) {
-      const updated = await dbService.incrementParticipation(currentUser.id)
-      if (updated) {
-        setCurrentUser(updated)
+      try {
+        const response = await fetch("/api/participation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setCurrentUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error("Error incrementing participation:", error)
       }
     }
   }
 
-  // Mark as applied
+  // Mark as applied - this should also be moved to an API route
   const markAsApplied = async () => {
     if (currentUser) {
-      const updated = await dbService.markAsApplied(currentUser.id)
-      if (updated) {
-        setCurrentUser(updated)
+      try {
+        const response = await fetch("/api/apply", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setCurrentUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error("Error marking as applied:", error)
       }
     }
   }
 
-  // Increment referral count
+  // Increment referral count - this should also be moved to an API route
   const incrementReferralCount = async () => {
     if (currentUser) {
-      const updated = await dbService.incrementReferralCount(currentUser.id)
-      if (updated) {
-        setCurrentUser(updated)
+      try {
+        const response = await fetch("/api/referral", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.user) {
+            setCurrentUser(data.user)
+          }
+        }
+      } catch (error) {
+        console.error("Error incrementing referral count:", error)
       }
     }
   }

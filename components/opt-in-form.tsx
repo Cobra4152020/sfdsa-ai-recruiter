@@ -79,16 +79,14 @@ export function OptInForm({
     setIsSubmitting(true)
     setError(null)
 
-    console.log("Starting user creation with:", { name, email, phone })
+    console.log("Starting user registration with:", { name, email, phone, isApplying })
 
     try {
-      console.log("Calling setUserInfo...")
-      const result = await setUserInfo(name, email, phone)
-      console.log("User creation result:", result)
+      // Pass isApplying flag to the setUserInfo function
+      const result = await setUserInfo(name, email, phone, isApplying)
+      console.log("User registration result:", result)
 
-      // If this is for an application, mark the user as applied
       if (isApplying) {
-        await markAsApplied()
         setSuccessMessage("Thank you for applying! You're being redirected to our application portal...")
         setShowSuccess(true)
 
