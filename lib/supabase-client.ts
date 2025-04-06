@@ -1,33 +1,19 @@
-// Create a mock or real Supabase client based on environment variables
-let supabase: any
-let getServiceSupabase: () => any
+import { createClient } from "@supabase/supabase-js"
 
-// Check if Supabase environment variables are available
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Get environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-if (supabaseUrl && supabaseAnonKey) {
-  // If environment variables are available, create the real Supabase client
-  const { createClient } = require("@supabase/supabase-js")
-  supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create clients
+const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
 
-  getServiceSupabase = () => {
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-    if (!serviceRoleKey) {
-      console.warn("SUPABASE_SERVICE_ROLE_KEY is not set. Some admin functions may not work.")
-    }
-    return createClient(supabaseUrl, serviceRoleKey)
-  }
-} else {
-  // If environment variables are not available, create a mock client
-  console.warn("Supabase environment variables are not set. Using mock database.")
-
-  // Mock implementation for development/preview
-  supabase = createMockSupabaseClient()
-  getServiceSupabase = () => createMockSupabaseClient()
+// Create a function to get a service role client when needed
+const getServiceSupabase = () => {
+  return createClient(supabaseUrl, supabaseServiceKey)
 }
 
-// Mock Supabase client for development/preview
+// Create a mock client for development/preview if no environment variables
 function createMockSupabaseClient() {
   // In-memory storage for mock data
   const mockUsers: any[] = []
@@ -75,8 +61,13 @@ function createMockSupabaseClient() {
       }),
       rpc: (func: string, params: any) => Promise.resolve({ data: null, error: null }),
     }),
+    auth: {
+      signInWithOtp: () => Promise.resolve({ data: null, error: null }),
+    },
   }
 }
 
-export { supabase, getServiceSupabase }
+// Use mock client if no environment variables are set
+const finalSupabase = supabaseUrl && (supabaseAnonKey || supabaseServiceKey) ? supabase : createMockSupabaseClient()
 
+export { finalSupabase as supabase, getServiceSupabase }

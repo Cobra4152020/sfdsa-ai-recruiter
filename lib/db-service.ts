@@ -247,9 +247,12 @@ class DatabaseService {
         }
       }
 
+      // Get service role client to bypass RLS
+      const serviceClient = getServiceSupabase()
+
       // Check if user already exists with this email
       if (!userData.id && userData.email) {
-        const { data: existingUser, error: findError } = await supabase
+        const { data: existingUser, error: findError } = await serviceClient
           .from("users")
           .select("id")
           .eq("email", userData.email)
@@ -261,7 +264,7 @@ class DatabaseService {
 
         if (existingUser) {
           // Update the existing user instead
-          const { data: updatedUser, error } = await supabase
+          const { data: updatedUser, error } = await serviceClient
             .from("users")
             .update({
               ...userToUpsert,
@@ -289,7 +292,7 @@ class DatabaseService {
       // Insert new user or update existing one by ID
       if (isNewUser) {
         // Insert new user
-        const { data: newUser, error } = await supabase.from("users").insert(userToUpsert).select("*").single()
+        const { data: newUser, error } = await serviceClient.from("users").insert(userToUpsert).select("*").single()
 
         if (error) {
           console.error("Error inserting new user:", error)
@@ -305,7 +308,7 @@ class DatabaseService {
         return newUser
       } else {
         // Update existing user
-        const { data: updatedUser, error } = await supabase
+        const { data: updatedUser, error } = await serviceClient
           .from("users")
           .update({
             ...userToUpsert,
@@ -384,7 +387,9 @@ class DatabaseService {
       return this.mockUsers[userIndex]
     }
 
-    const { data: user, error: fetchError } = await supabase
+    const serviceClient = getServiceSupabase()
+
+    const { data: user, error: fetchError } = await serviceClient
       .from("users")
       .select("participationCount")
       .eq("id", userId)
@@ -394,7 +399,7 @@ class DatabaseService {
 
     const newCount = (user.participationCount || 0) + 1
 
-    const { data: updatedUser, error: updateError } = await supabase
+    const { data: updatedUser, error: updateError } = await serviceClient
       .from("users")
       .update({ participationCount: newCount, updatedAt: new Date().toISOString() })
       .eq("id", userId)
@@ -484,7 +489,9 @@ class DatabaseService {
       return this.mockUsers[userIndex]
     }
 
-    const { data: updatedUser, error } = await supabase
+    const serviceClient = getServiceSupabase()
+
+    const { data: updatedUser, error } = await serviceClient
       .from("users")
       .update({ hasApplied: true, updatedAt: new Date().toISOString() })
       .eq("id", userId)
@@ -527,7 +534,9 @@ class DatabaseService {
         return usersWithBadges
       }
 
-      const { data, error } = await supabase
+      const serviceClient = getServiceSupabase()
+
+      const { data, error } = await serviceClient
         .from("users")
         .select("*")
         .order("participationCount", { ascending: false })
@@ -576,8 +585,10 @@ class DatabaseService {
         return usersWithBadges
       }
 
+      const serviceClient = getServiceSupabase()
+
       // First get all users who have applied
-      const { data, error } = await supabase.from("users").select("*").eq("hasApplied", true)
+      const { data, error } = await serviceClient.from("users").select("*").eq("hasApplied", true)
 
       if (error) {
         console.error("Error fetching top applicants data:", error)
@@ -691,10 +702,9 @@ class DatabaseService {
         return badges
       }
 
-      // In a real implementation, we would query the badges table
-      // For this mock implementation, we'll generate some sample badges
+      const serviceClient = getServiceSupabase()
 
-      const { data: user, error } = await supabase
+      const { data: user, error } = await serviceClient
         .from("users")
         .select("participationCount, hasApplied, referralCount")
         .eq("id", userId)
