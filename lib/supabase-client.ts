@@ -5,16 +5,21 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-// Create clients
-const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
-
-// Create a function to get a service role client when needed
-const getServiceSupabase = () => {
-  return createClient(supabaseUrl, supabaseServiceKey)
+// Add detailed debugging to see which keys are available
+if (typeof window === "undefined") {
+  console.log("Server-side Supabase environment check:")
+  console.log(`URL available: ${!!supabaseUrl}`)
+  console.log(`Anon key available: ${!!supabaseAnonKey}`)
+  console.log(`Service key available: ${!!supabaseServiceKey}`)
 }
+
+// Determine if we're in mock mode (missing required environment variables)
+const isMockMode = !supabaseUrl || (!supabaseAnonKey && !supabaseServiceKey)
 
 // Create a mock client for development/preview if no environment variables
 function createMockSupabaseClient() {
+  console.log("Creating mock Supabase client due to missing environment variables")
+
   // In-memory storage for mock data
   const mockUsers: any[] = []
 
@@ -67,7 +72,36 @@ function createMockSupabaseClient() {
   }
 }
 
-// Use mock client if no environment variables are set
-const finalSupabase = supabaseUrl && (supabaseAnonKey || supabaseServiceKey) ? supabase : createMockSupabaseClient()
+// Initialize Supabase client or mock client
+let supabase: any
+let getServiceSupabase: () => any
 
-export { finalSupabase as supabase, getServiceSupabase }
+if (isMockMode) {
+  // Use mock client if required environment variables are missing
+  const mockClient = createMockSupabaseClient()
+  supabase = mockClient
+  getServiceSupabase = () => mockClient
+
+  console.log("Using mock Supabase client due to missing environment variables")
+} else {
+  // Create real Supabase client with available credentials
+  supabase = createClient(supabaseUrl, supabaseAnonKey || supabaseServiceKey)
+
+  // Create a function to get a service role client when needed
+  getServiceSupabase = () => {
+    if (!supabaseServiceKey) {
+      console.warn("WARNING: Service role key is missing, using anon key instead")
+      return createClient(supabaseUrl, supabaseAnonKey)
+    }
+    return createClient(supabaseUrl, supabaseServiceKey)
+  }
+
+  console.log("Using real Supabase client with available credentials")
+}
+
+// Log the initialization status for debugging
+if (typeof window !== "undefined") {
+  console.log(`Supabase client initialized in ${isMockMode ? "mock" : "real"} mode`)
+}
+
+export { supabase, getServiceSupabase, isMockMode }

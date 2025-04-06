@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-import { supabase, getServiceSupabase } from "./supabase-client"
+import { supabase, getServiceSupabase, isMockMode } from "./supabase-client"
 import type { BadgeType } from "@/components/earned-badges"
 
 // Types for user and leaderboard data
@@ -45,18 +45,19 @@ export type ParticipantBadgeType =
 // Database service implementation using Supabase or mock
 class DatabaseService {
   private notificationEmail = "kennethlomba@gmail.com" // Email to receive notifications
-  private isMockMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   private mockUsers: UserData[] = []
 
   constructor() {
+    console.log("DatabaseService initialized, mock mode:", isMockMode)
     // Initialize mock data if in mock mode
-    if (this.isMockMode) {
+    if (isMockMode) {
       this.initializeMockData()
     }
   }
 
   // Initialize mock data for development/preview
   private initializeMockData() {
+    console.log("Initializing mock data for development/preview")
     // Create sample users with various participation levels and badges
     this.mockUsers = [
       {
@@ -164,33 +165,44 @@ class DatabaseService {
 
   // Initialize the database (create tables if they don't exist)
   async initialize() {
-    if (this.isMockMode) {
+    if (isMockMode) {
       console.log("Running in mock mode - no initialization needed")
       return
     }
 
-    const serviceSupabase = getServiceSupabase()
-
-    // Check if the users table exists and create it if needed
     try {
-      // For simplicity, we assume if we can query the table, it exists
-      await serviceSupabase.from("users").select("id").limit(1)
-    } catch (error) {
-      console.error("Error checking users table, attempting to create:", error)
+      const serviceSupabase = getServiceSupabase()
 
-      // We would normally define the schema through Supabase directly
-      // but this is a fallback in case the table doesn't exist
+      // Check if the users table exists and create it if needed
       try {
-        await serviceSupabase.rpc("create_users_table_if_not_exists")
-      } catch (createError) {
-        console.error("Failed to create users table:", createError)
+        // For simplicity, we assume if we can query the table, it exists
+        await serviceSupabase.from("users").select("id").limit(1)
+        console.log("Users table exists")
+      } catch (error) {
+        console.error("Error checking users table, attempting to create:", error)
+
+        // We would normally define the schema through Supabase directly
+        // but this is a fallback in case the table doesn't exist
+        try {
+          await serviceSupabase.rpc("create_users_table_if_not_exists")
+          console.log("Created users table")
+        } catch (createError) {
+          console.error("Failed to create users table:", createError)
+        }
       }
+    } catch (error) {
+      console.error("Error initializing database:", error)
     }
   }
 
   // Add or update a user
   async upsertUser(userData: Partial<UserData>): Promise<UserData> {
     try {
+      // Check if we're running on the client side
+      if (typeof window !== "undefined") {
+        console.error("WARNING: upsertUser called on client side - this should only run on the server")
+      }
+
       const isNewUser = !userData.id
       const id = userData.id || uuidv4()
       const now = new Date().toISOString()
@@ -209,7 +221,8 @@ class DatabaseService {
       }
 
       // If in mock mode, handle with mock implementation
-      if (this.isMockMode) {
+      if (isMockMode) {
+        console.log("Using mock implementation for upsertUser")
         const existingUserIndex = this.mockUsers.findIndex(
           (user) => (userData.id && user.id === userData.id) || (userData.email && user.email === userData.email),
         )
@@ -249,6 +262,7 @@ class DatabaseService {
 
       // Get service role client to bypass RLS
       const serviceClient = getServiceSupabase()
+      console.log("Using service client for upsertUser operation")
 
       // Check if user already exists with this email
       if (!userData.id && userData.email) {
@@ -335,7 +349,7 @@ class DatabaseService {
   private async sendNotificationEmail(user: UserData): Promise<void> {
     try {
       // Skip sending emails in mock mode
-      if (this.isMockMode) {
+      if (isMockMode) {
         console.log("Mock mode: Would send notification email for user:", user.name)
         return
       }
@@ -368,7 +382,7 @@ class DatabaseService {
   // Increment participation count for a user
   async incrementParticipation(userId: string): Promise<UserData | null> {
     // If in mock mode, handle with mock implementation
-    if (this.isMockMode) {
+    if (isMockMode) {
       const userIndex = this.mockUsers.findIndex((user) => user.id === userId)
       if (userIndex === -1) return null
 
@@ -388,6 +402,11 @@ class DatabaseService {
     }
 
     const serviceClient = getServiceSupabase()
+
+    // Check if we're running on the client side
+    if (typeof window !== "undefined") {
+      console.error("WARNING: incrementParticipation called on client side - this should only run on the server")
+    }
 
     const { data: user, error: fetchError } = await serviceClient
       .from("users")
@@ -425,8 +444,13 @@ class DatabaseService {
 
   // Increment referral count for a user
   async incrementReferralCount(userId: string): Promise<UserData | null> {
+    // Check if we're running on the client side
+    if (typeof window !== "undefined") {
+      console.error("WARNING: incrementReferralCount called on client side - this should only run on the server")
+    }
+
     // If in mock mode, handle with mock implementation
-    if (this.isMockMode) {
+    if (isMockMode) {
       const userIndex = this.mockUsers.findIndex((user) => user.id === userId)
       if (userIndex === -1) return null
 
@@ -441,7 +465,10 @@ class DatabaseService {
       return this.mockUsers[userIndex]
     }
 
-    const { data: user, error: fetchError } = await supabase
+    // Use service client to bypass RLS
+    const serviceClient = getServiceSupabase()
+
+    const { data: user, error: fetchError } = await serviceClient
       .from("users")
       .select("referralCount")
       .eq("id", userId)
@@ -451,7 +478,7 @@ class DatabaseService {
 
     const newCount = (user.referralCount || 0) + 1
 
-    const { data: updatedUser, error: updateError } = await supabase
+    const { data: updatedUser, error: updateError } = await serviceClient
       .from("users")
       .update({ referralCount: newCount, updatedAt: new Date().toISOString() })
       .eq("id", userId)
@@ -473,8 +500,13 @@ class DatabaseService {
 
   // Mark user as applied
   async markAsApplied(userId: string): Promise<UserData | null> {
+    // Check if we're running on the client side
+    if (typeof window !== "undefined") {
+      console.error("WARNING: markAsApplied called on client side - this should only run on the server")
+    }
+
     // If in mock mode, handle with mock implementation
-    if (this.isMockMode) {
+    if (isMockMode) {
       const userIndex = this.mockUsers.findIndex((user) => user.id === userId)
       if (userIndex === -1) return null
 
@@ -516,7 +548,7 @@ class DatabaseService {
   async getParticipationLeaderboard(limit = 10): Promise<UserData[]> {
     try {
       // If in mock mode, return mock data
-      if (this.isMockMode) {
+      if (isMockMode) {
         // Sort by participation count and limit
         const sortedUsers = [...this.mockUsers]
           .sort((a, b) => b.participationCount - a.participationCount)
@@ -534,6 +566,7 @@ class DatabaseService {
         return usersWithBadges
       }
 
+      // Use service client to bypass RLS
       const serviceClient = getServiceSupabase()
 
       const { data, error } = await serviceClient
@@ -551,7 +584,8 @@ class DatabaseService {
       const usersWithBadges = await Promise.all(
         (data || []).map(async (user) => {
           const badges = await this.getUserBadges(user.id)
-          return { ...user, badges }
+          const participantBadgeType = this.getParticipantBadgeType(user)
+          return { ...user, badges, participantBadgeType }
         }),
       )
 
@@ -566,7 +600,7 @@ class DatabaseService {
   async getApplicantsLeaderboard(limit = 10): Promise<UserData[]> {
     try {
       // If in mock mode, return mock data
-      if (this.isMockMode) {
+      if (isMockMode) {
         // Filter applied users, sort by participation count and limit
         const sortedUsers = [...this.mockUsers]
           .filter((user) => user.hasApplied)
@@ -671,7 +705,7 @@ class DatabaseService {
   async getUserBadges(userId: string): Promise<BadgeType[]> {
     try {
       // If in mock mode, generate badges based on user data
-      if (this.isMockMode) {
+      if (isMockMode) {
         const user = this.mockUsers.find((u) => u.id === userId)
         if (!user) return []
 
@@ -702,6 +736,7 @@ class DatabaseService {
         return badges
       }
 
+      // Use service client to bypass RLS
       const serviceClient = getServiceSupabase()
 
       const { data: user, error } = await serviceClient
@@ -823,7 +858,7 @@ class DatabaseService {
   private async sendBadgeNotificationEmail(userId: string, badge: BadgeType): Promise<void> {
     try {
       // Skip sending emails in mock mode
-      if (this.isMockMode) {
+      if (isMockMode) {
         console.log("Mock mode: Would send badge notification email for badge:", badge.name)
         return
       }
