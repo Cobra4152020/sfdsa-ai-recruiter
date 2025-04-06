@@ -7,7 +7,7 @@ import { ChatButton } from "./chat-button"
 
 export function FloatingChatButton() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
   const chatContainerRef = useRef<HTMLDivElement>(null)
 
   // Handle clicks outside the chat container to close it
@@ -24,25 +24,20 @@ export function FloatingChatButton() {
     }
   }, [isOpen])
 
-  // Hide chat button on success page
+  // Check if we should show the chat button based on the current path
   useEffect(() => {
-    const isSuccessPage = window.location.pathname.includes("/success")
-    setIsVisible(!isSuccessPage)
-  }, [])
-
-  // Listen for route changes to update visibility
-  useEffect(() => {
-    const handleRouteChange = () => {
+    const checkVisibility = () => {
+      // Don't show on success page
       const isSuccessPage = window.location.pathname.includes("/success")
       setIsVisible(!isSuccessPage)
     }
 
-    // Initial check
-    handleRouteChange()
+    // Check immediately
+    checkVisibility()
 
     // Set up a MutationObserver to detect URL changes
     const observer = new MutationObserver(() => {
-      handleRouteChange()
+      checkVisibility()
     })
 
     observer.observe(document, { subtree: true, childList: true })
