@@ -196,3 +196,4 @@ export function RecruitmentBadge({
   )
 }
 
+export default RecruitmentBadge

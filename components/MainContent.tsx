@@ -115,8 +115,8 @@ const MainContent: React.FC<MainContentProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* Chat Area - make it more compact and auto-adjust */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.map((message, index) => {
           const isLatestAssistantMessage =
             message.role === "assistant" && index === messages.length - 1 && typeof message.content === "string"
@@ -124,7 +124,7 @@ const MainContent: React.FC<MainContentProps> = ({
           return (
             <div key={index} className={`max-w-3xl mx-auto ${message.role === "user" ? "ml-auto" : ""}`}>
               <div
-                className={`rounded-lg p-4 ${
+                className={`rounded-lg p-3 ${
                   message.role === "user" ? "user-message ml-12 sm:ml-24 shadow-md" : "assistant-message shadow-md"
                 }`}
               >
@@ -150,7 +150,7 @@ const MainContent: React.FC<MainContentProps> = ({
 
         {isLoading && (
           <div className="max-w-3xl mx-auto">
-            <div className="assistant-message rounded-lg p-4 shadow-md">
+            <div className="assistant-message rounded-lg p-3 shadow-md">
               <div className="flex space-x-2">
                 <div
                   className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
@@ -173,7 +173,7 @@ const MainContent: React.FC<MainContentProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-[#D1C28F] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] shadow-md">
+      <div className="p-3 border-t border-[#D1C28F] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] shadow-md">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex gap-2">
             <input

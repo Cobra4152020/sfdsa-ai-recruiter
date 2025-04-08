@@ -174,7 +174,7 @@ function RecruitmentApp() {
               </div>
 
               <div className="max-w-4xl mx-auto bg-white dark:bg-[#1E1E1E] rounded-xl shadow-xl overflow-hidden border border-[#E0D6B8] dark:border-[#333333]">
-                <div className="h-[600px] flex flex-col">
+                <div className="h-[400px] flex flex-col">
                   <MainContent
                     messages={messages}
                     onSendMessage={handleUserMessage}

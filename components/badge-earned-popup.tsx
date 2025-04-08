@@ -1,8 +1,10 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
+import { X, Shield, Award, Trophy, Star, Target, Medal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { BadgeType } from "@/components/earned-badges"
 import { BadgeSharingDialog } from "@/components/badge-sharing-dialog"
@@ -41,55 +43,56 @@ export function BadgeEarnedPopup({ badge, userName, onClose }: BadgeEarnedPopupP
     }, 300) // Wait for exit animation
   }
 
-  // Map badge types to fun badge emojis and styles
+  // Map badge types to icons and styles
   const getBadgeStyles = () => {
     if (!badge) return null
 
-    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; emoji: string }> = {
-      shield: {
-        bgColor: "from-emerald-500 to-green-600",
-        borderColor: "border-emerald-300",
-        shadowColor: "rgba(16, 185, 129, 0.5)",
-        emoji: "🛡️",
-      },
-      award: {
-        bgColor: "from-amber-500 to-orange-600",
-        borderColor: "border-amber-300",
-        shadowColor: "rgba(245, 158, 11, 0.5)",
-        emoji: "🏆",
-      },
-      trophy: {
-        bgColor: "from-yellow-400 to-yellow-600",
-        borderColor: "border-yellow-300",
-        shadowColor: "rgba(234, 179, 8, 0.5)",
-        emoji: "🏅",
-      },
-      star: {
-        bgColor: "from-blue-500 to-indigo-600",
-        borderColor: "border-blue-300",
-        shadowColor: "rgba(59, 130, 246, 0.5)",
-        emoji: "⭐",
-      },
-      target: {
-        bgColor: "from-purple-500 to-violet-600",
-        borderColor: "border-purple-300",
-        shadowColor: "rgba(139, 92, 246, 0.5)",
-        emoji: "🎯",
-      },
-      medal: {
-        bgColor: "from-red-500 to-rose-600",
-        borderColor: "border-red-300",
-        shadowColor: "rgba(239, 68, 68, 0.5)",
-        emoji: "🥇",
-      },
-    }
+    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; icon: React.ReactNode }> =
+      {
+        shield: {
+          bgColor: "from-emerald-500 to-green-600",
+          borderColor: "border-emerald-300",
+          shadowColor: "rgba(16, 185, 129, 0.5)",
+          icon: <Shield className="h-12 w-12 text-white" />,
+        },
+        award: {
+          bgColor: "from-amber-500 to-orange-600",
+          borderColor: "border-amber-300",
+          shadowColor: "rgba(245, 158, 11, 0.5)",
+          icon: <Award className="h-12 w-12 text-white" />,
+        },
+        trophy: {
+          bgColor: "from-yellow-400 to-yellow-600",
+          borderColor: "border-yellow-300",
+          shadowColor: "rgba(234, 179, 8, 0.5)",
+          icon: <Trophy className="h-12 w-12 text-white" />,
+        },
+        star: {
+          bgColor: "from-blue-500 to-indigo-600",
+          borderColor: "border-blue-300",
+          shadowColor: "rgba(59, 130, 246, 0.5)",
+          icon: <Star className="h-12 w-12 text-white" />,
+        },
+        target: {
+          bgColor: "from-purple-500 to-violet-600",
+          borderColor: "border-purple-300",
+          shadowColor: "rgba(139, 92, 246, 0.5)",
+          icon: <Target className="h-12 w-12 text-white" />,
+        },
+        medal: {
+          bgColor: "from-red-500 to-rose-600",
+          borderColor: "border-red-300",
+          shadowColor: "rgba(239, 68, 68, 0.5)",
+          icon: <Medal className="h-12 w-12 text-white" />,
+        },
+      }
 
     // Default style if the icon type is not found
     const defaultStyle = {
       bgColor: "from-gray-500 to-gray-600",
       borderColor: "border-gray-300",
       shadowColor: "rgba(107, 114, 128, 0.5)",
-      emoji: "🔔",
+      icon: <Award className="h-12 w-12 text-white" />,
     }
 
     return styles[badge.icon] || defaultStyle
@@ -97,8 +100,6 @@ export function BadgeEarnedPopup({ badge, userName, onClose }: BadgeEarnedPopupP
 
   const style = getBadgeStyles()
   if (!badge || !style) return null
-
-  const emoji = badge.emoji || style.emoji
 
   return (
     <>
@@ -141,7 +142,7 @@ export function BadgeEarnedPopup({ badge, userName, onClose }: BadgeEarnedPopupP
                     <div
                       className={`relative flex items-center justify-center h-full w-full rounded-full border-2 ${style.borderColor} bg-gradient-to-br ${style.bgColor} overflow-hidden`}
                     >
-                      <span className="text-white text-4xl">{emoji}</span>
+                      {style.icon}
                     </div>
 
                     {/* Shine effect */}
@@ -211,4 +212,3 @@ export function BadgeEarnedPopup({ badge, userName, onClose }: BadgeEarnedPopupP
     </>
   )
 }
-

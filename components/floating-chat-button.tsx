@@ -58,9 +58,9 @@ export function FloatingChatButton() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden w-[350px] md:w-[400px] h-[500px] mb-4"
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden w-[350px] md:w-[400px] h-[400px] mb-4"
           >
-            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+            <div className="flex items-center justify-between p-3 border-b dark:border-gray-700">
               <h3 className="font-semibold text-lg">Recruitment Assistant</h3>
               <button
                 onClick={() => setIsOpen(false)}
@@ -70,7 +70,7 @@ export function FloatingChatButton() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="p-0 h-[calc(100%-60px)]">
+            <div className="p-0 h-[calc(100%-48px)]">
               <ChatButton fullHeight />
             </div>
           </motion.div>

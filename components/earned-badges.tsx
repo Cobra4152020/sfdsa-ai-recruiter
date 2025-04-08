@@ -1,8 +1,11 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { BadgeSharingDialog } from "@/components/badge-sharing-dialog"
+import { Shield, Award, Trophy, Star, Target, Medal } from "lucide-react"
 
 export interface BadgeType {
   id: string
@@ -12,8 +15,6 @@ export interface BadgeType {
   color: string
   earnedAt: Date
   shareMessage: string
-  imageUrl?: string
-  emoji?: string
 }
 
 interface EarnedBadgesProps {
@@ -30,53 +31,54 @@ export function EarnedBadges({ badges, userName }: EarnedBadgesProps) {
     setIsSharingOpen(true)
   }
 
-  // Map badge types to fun badge emojis and styles
+  // Map badge types to icons and styles
   const getBadgeStyles = (badge: BadgeType) => {
-    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; emoji: string }> = {
-      shield: {
-        bgColor: "from-emerald-500 to-green-600",
-        borderColor: "border-emerald-300",
-        shadowColor: "rgba(16, 185, 129, 0.5)",
-        emoji: "🛡️",
-      },
-      award: {
-        bgColor: "from-amber-500 to-orange-600",
-        borderColor: "border-amber-300",
-        shadowColor: "rgba(245, 158, 11, 0.5)",
-        emoji: "🏆",
-      },
-      trophy: {
-        bgColor: "from-yellow-400 to-yellow-600",
-        borderColor: "border-yellow-300",
-        shadowColor: "rgba(234, 179, 8, 0.5)",
-        emoji: "🏅",
-      },
-      star: {
-        bgColor: "from-blue-500 to-indigo-600",
-        borderColor: "border-blue-300",
-        shadowColor: "rgba(59, 130, 246, 0.5)",
-        emoji: "⭐",
-      },
-      target: {
-        bgColor: "from-purple-500 to-violet-600",
-        borderColor: "border-purple-300",
-        shadowColor: "rgba(139, 92, 246, 0.5)",
-        emoji: "🎯",
-      },
-      medal: {
-        bgColor: "from-red-500 to-rose-600",
-        borderColor: "border-red-300",
-        shadowColor: "rgba(239, 68, 68, 0.5)",
-        emoji: "🥇",
-      },
-    }
+    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; icon: React.ReactNode }> =
+      {
+        shield: {
+          bgColor: "from-emerald-500 to-green-600",
+          borderColor: "border-emerald-300",
+          shadowColor: "rgba(16, 185, 129, 0.5)",
+          icon: <Shield className="h-3 w-3 text-white" />,
+        },
+        award: {
+          bgColor: "from-amber-500 to-orange-600",
+          borderColor: "border-amber-300",
+          shadowColor: "rgba(245, 158, 11, 0.5)",
+          icon: <Award className="h-3 w-3 text-white" />,
+        },
+        trophy: {
+          bgColor: "from-yellow-400 to-yellow-600",
+          borderColor: "border-yellow-300",
+          shadowColor: "rgba(234, 179, 8, 0.5)",
+          icon: <Trophy className="h-3 w-3 text-white" />,
+        },
+        star: {
+          bgColor: "from-blue-500 to-indigo-600",
+          borderColor: "border-blue-300",
+          shadowColor: "rgba(59, 130, 246, 0.5)",
+          icon: <Star className="h-3 w-3 text-white" />,
+        },
+        target: {
+          bgColor: "from-purple-500 to-violet-600",
+          borderColor: "border-purple-300",
+          shadowColor: "rgba(139, 92, 246, 0.5)",
+          icon: <Target className="h-3 w-3 text-white" />,
+        },
+        medal: {
+          bgColor: "from-red-500 to-rose-600",
+          borderColor: "border-red-300",
+          shadowColor: "rgba(239, 68, 68, 0.5)",
+          icon: <Medal className="h-3 w-3 text-white" />,
+        },
+      }
 
     // Default style if the icon type is not found
     const defaultStyle = {
       bgColor: "from-gray-500 to-gray-600",
       borderColor: "border-gray-300",
       shadowColor: "rgba(107, 114, 128, 0.5)",
-      emoji: "🔔",
+      icon: <Award className="h-3 w-3 text-white" />,
     }
 
     return styles[badge.icon] || defaultStyle
@@ -85,7 +87,6 @@ export function EarnedBadges({ badges, userName }: EarnedBadgesProps) {
   // Render a fun badge
   const renderBadge = (badge: BadgeType) => {
     const style = getBadgeStyles(badge)
-    const emoji = badge.emoji || style.emoji
 
     return (
       <button
@@ -101,7 +102,7 @@ export function EarnedBadges({ badges, userName }: EarnedBadgesProps) {
         <div
           className={`relative flex items-center justify-center h-full w-full rounded-full border ${style.borderColor} bg-gradient-to-br ${style.bgColor} overflow-hidden`}
         >
-          <span className="text-white text-sm">{emoji}</span>
+          {style.icon}
         </div>
 
         {/* Subtle shine effect */}
@@ -140,4 +141,3 @@ export function EarnedBadges({ badges, userName }: EarnedBadgesProps) {
     </div>
   )
 }
-

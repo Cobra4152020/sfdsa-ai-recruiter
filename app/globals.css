@@ -66,7 +66,7 @@
 /* Custom styles */
 @layer components {
   .user-message {
-    @apply bg-[#0A3C1F] text-white dark:bg-[#FFD700] dark:text-black;
+    @apply bg-[#0A3C1F] text-white dark:bg-[#0A3C1F] dark:text-white;
   }
 
   .assistant-message {
@@ -98,4 +98,3 @@
     animation: ticker 15s linear infinite;
   }
 }
-

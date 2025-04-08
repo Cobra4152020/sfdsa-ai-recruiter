@@ -267,7 +267,7 @@ function GIBillContent() {
                 </CardHeader>
                 <CardContent>
                   <div className="bg-white dark:bg-[#1E1E1E] rounded-xl shadow-md overflow-hidden border border-[#E0D6B8] dark:border-[#333333]">
-                    <div className="h-[400px] flex flex-col">
+                    <div className="h-[350px] flex flex-col">
                       <MainContent
                         messages={messages}
                         onSendMessage={handleUserMessage}
