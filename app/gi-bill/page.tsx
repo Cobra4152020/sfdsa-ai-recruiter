@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import MainContent from "@/components/MainContent"
-import { queryKlarnaAI } from "@/lib/klarna-ai"
+import { queryOpenAI } from "@/lib/openai-service"
 
 function GIBillContent() {
   const [isOptInFormOpen, setIsOptInFormOpen] = useState(false)
@@ -62,8 +62,8 @@ function GIBillContent() {
         return
       }
 
-      // Query Klarna AI with the user's message
-      const aiResponse = await queryKlarnaAI(message)
+      // Query OpenAI with the user's message
+      const aiResponse = await queryOpenAI(message)
 
       // If no specific G.I. Bill response, provide default G.I. Bill information
       let responseText = aiResponse.text
@@ -82,7 +82,7 @@ function GIBillContent() {
       ])
       setDisplayedResponse(responseText)
     } catch (error) {
-      console.error("Error querying Klarna AI:", error)
+      console.error("Error querying OpenAI:", error)
 
       // Fallback response
       const fallbackResponse =

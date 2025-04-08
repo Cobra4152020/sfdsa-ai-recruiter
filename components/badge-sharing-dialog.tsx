@@ -1,11 +1,27 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import type { BadgeType } from "@/components/earned-badges"
-import { Check, Copy, Facebook, Twitter, Linkedin, Instagram } from "lucide-react"
-import { FaTiktok, FaThreads } from "react-icons/fa6"
+import {
+  Check,
+  Copy,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  Shield,
+  Award,
+  Trophy,
+  Star,
+  Target,
+  Medal,
+  Hash,
+  AtSign,
+} from "lucide-react"
 
 interface BadgeSharingDialogProps {
   isOpen: boolean
@@ -71,60 +87,60 @@ export function BadgeSharingDialog({ isOpen, onClose, badge, userName }: BadgeSh
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Map badge types to fun badge emojis and styles
+  // Map badge types to icons and styles
   const getBadgeStyles = () => {
-    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; emoji: string }> = {
-      shield: {
-        bgColor: "from-emerald-500 to-green-600",
-        borderColor: "border-emerald-300",
-        shadowColor: "rgba(16, 185, 129, 0.5)",
-        emoji: "🛡️",
-      },
-      award: {
-        bgColor: "from-amber-500 to-orange-600",
-        borderColor: "border-amber-300",
-        shadowColor: "rgba(245, 158, 11, 0.5)",
-        emoji: "🏆",
-      },
-      trophy: {
-        bgColor: "from-yellow-400 to-yellow-600",
-        borderColor: "border-yellow-300",
-        shadowColor: "rgba(234, 179, 8, 0.5)",
-        emoji: "🏅",
-      },
-      star: {
-        bgColor: "from-blue-500 to-indigo-600",
-        borderColor: "border-blue-300",
-        shadowColor: "rgba(59, 130, 246, 0.5)",
-        emoji: "⭐",
-      },
-      target: {
-        bgColor: "from-purple-500 to-violet-600",
-        borderColor: "border-purple-300",
-        shadowColor: "rgba(139, 92, 246, 0.5)",
-        emoji: "🎯",
-      },
-      medal: {
-        bgColor: "from-red-500 to-rose-600",
-        borderColor: "border-red-300",
-        shadowColor: "rgba(239, 68, 68, 0.5)",
-        emoji: "🥇",
-      },
-    }
+    const styles: Record<string, { bgColor: string; borderColor: string; shadowColor: string; icon: React.ReactNode }> =
+      {
+        shield: {
+          bgColor: "from-emerald-500 to-green-600",
+          borderColor: "border-emerald-300",
+          shadowColor: "rgba(16, 185, 129, 0.5)",
+          icon: <Shield className="h-10 w-10 text-white" />,
+        },
+        award: {
+          bgColor: "from-amber-500 to-orange-600",
+          borderColor: "border-amber-300",
+          shadowColor: "rgba(245, 158, 11, 0.5)",
+          icon: <Award className="h-10 w-10 text-white" />,
+        },
+        trophy: {
+          bgColor: "from-yellow-400 to-yellow-600",
+          borderColor: "border-yellow-300",
+          shadowColor: "rgba(234, 179, 8, 0.5)",
+          icon: <Trophy className="h-10 w-10 text-white" />,
+        },
+        star: {
+          bgColor: "from-blue-500 to-indigo-600",
+          borderColor: "border-blue-300",
+          shadowColor: "rgba(59, 130, 246, 0.5)",
+          icon: <Star className="h-10 w-10 text-white" />,
+        },
+        target: {
+          bgColor: "from-purple-500 to-violet-600",
+          borderColor: "border-purple-300",
+          shadowColor: "rgba(139, 92, 246, 0.5)",
+          icon: <Target className="h-10 w-10 text-white" />,
+        },
+        medal: {
+          bgColor: "from-red-500 to-rose-600",
+          borderColor: "border-red-300",
+          shadowColor: "rgba(239, 68, 68, 0.5)",
+          icon: <Medal className="h-10 w-10 text-white" />,
+        },
+      }
 
     // Default style if the icon type is not found
     const defaultStyle = {
       bgColor: "from-gray-500 to-gray-600",
       borderColor: "border-gray-300",
       shadowColor: "rgba(107, 114, 128, 0.5)",
-      emoji: "🔔",
+      icon: <Award className="h-10 w-10 text-white" />,
     }
 
     return styles[badge.icon] || defaultStyle
   }
 
   const style = getBadgeStyles()
-  const emoji = badge.emoji || style.emoji
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -148,7 +164,7 @@ export function BadgeSharingDialog({ isOpen, onClose, badge, userName }: BadgeSh
             <div
               className={`relative flex items-center justify-center h-full w-full rounded-full border-2 ${style.borderColor} bg-gradient-to-br ${style.bgColor} overflow-hidden`}
             >
-              <span className="text-white text-3xl">{emoji}</span>
+              {style.icon}
             </div>
 
             {/* Shine effect */}
@@ -203,7 +219,7 @@ export function BadgeSharingDialog({ isOpen, onClose, badge, userName }: BadgeSh
             variant="outline"
             className="flex items-center justify-center gap-2 bg-black/10 hover:bg-black/20 text-black dark:text-white border-black/30 dark:border-white/30"
           >
-            <FaThreads className="h-4 w-4" />
+            <AtSign className="h-4 w-4" />
             <span className="sr-only sm:not-sr-only sm:inline-block">Threads</span>
           </Button>
           <Button
@@ -211,7 +227,7 @@ export function BadgeSharingDialog({ isOpen, onClose, badge, userName }: BadgeSh
             variant="outline"
             className="flex items-center justify-center gap-2 bg-black/10 hover:bg-black/20 text-black dark:text-white border-black/30 dark:border-white/30"
           >
-            <FaTiktok className="h-4 w-4" />
+            <Hash className="h-4 w-4" />
             <span className="sr-only sm:not-sr-only sm:inline-block">TikTok</span>
           </Button>
         </div>
@@ -234,4 +250,3 @@ export function BadgeSharingDialog({ isOpen, onClose, badge, userName }: BadgeSh
     </Dialog>
   )
 }
-
