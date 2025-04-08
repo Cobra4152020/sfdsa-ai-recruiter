@@ -95,8 +95,8 @@
       <p>Ask me anything about becoming a Deputy Sheriff!</p>
     </div>
     <div class="message assistant-message">
-      Hello! I'm your recruitment assistant. I can answer questions about the application process, requirements, benefits, and more. How can I help you today?
-    </div>
+  Hey there! I'm Sergeant Ken, but you can call me Sgt. Ken. I've been with the San Francisco Sheriff's Office for 15 years now, and I've got to tell you - it's been an incredible journey! With unemployment on the rise, there's never been a better time to consider a stable, rewarding career in law enforcement. What would you like to know about becoming a Deputy Sheriff? I'm here to help you take that first step toward an exciting new career!
+</div>
   </div>
   
   <div class="input-container">
@@ -131,24 +131,28 @@
       }
       
       function getResponse(question) {
-        question = question.toLowerCase();
-        
-        if (question.includes('requirement') || question.includes('qualify') || question.includes('eligible')) {
-          return responses.requirements;
-        } else if (question.includes('salary') || question.includes('pay') || question.includes('money') || question.includes('earn')) {
-          return responses.salary;
-        } else if (question.includes('apply') || question.includes('application') || question.includes('process')) {
-          return responses.application;
-        } else if (question.includes('train') || question.includes('academy')) {
-          return responses.training;
-        } else if (question.includes('benefit') || question.includes('insurance') || question.includes('retirement')) {
-          return responses.benefits;
-        } else if (question.includes('schedule') || question.includes('hours') || question.includes('shift')) {
-          return responses.schedule;
-        } else {
-          return responses.default;
-        }
-      }
+  question = question.toLowerCase();
+  
+  if (question.includes('requirement') || question.includes('qualify') || question.includes('eligible')) {
+    return "Based on my 15 years with the department, I can tell you that to become a Deputy Sheriff, you need to be at least 21 years old, have a high school diploma or GED (though college is preferred), be a US citizen or permanent resident who has applied for citizenship, have a valid driver's license, and pass background checks and physical tests. Don't worry too much about the requirements - many of our best deputies weren't sure they'd qualify at first! I'd be happy to discuss any specific requirement you're concerned about. What do you think - do you meet these basic qualifications?";
+  } else if (question.includes('salary') || question.includes('pay') || question.includes('money') || question.includes('earn')) {
+    return "Let me tell you, the compensation is one of the best parts of this job! Deputy Sheriff Recruits start at $89,856 annually, and after academy graduation, that jumps to $98,956 to $120,276 based on your experience. Plus, there's great overtime opportunities, premium pay for specialized assignments, and one of the best benefits packages in law enforcement. With the economy being what it is right now, having this kind of job security and steady income is invaluable. Would you like to hear more about the benefits package too?";
+  } else if (question.includes('apply') || question.includes('application') || question.includes('process')) {
+    return "I'm excited that you're interested in applying! The process is straightforward - you'll start with an online application at sfsheriff.com/careers, then take a written exam, complete a physical ability test, have an oral interview, and go through a background investigation. It typically takes 4-6 months from application to academy. With unemployment rising, now is the perfect time to start the process. The sooner you apply, the sooner you could be wearing the badge! Can I help you with any specific part of the application process?";
+  } else if (question.includes('train') || question.includes('academy')) {
+    return "The academy training is challenging but incredibly rewarding - I still remember my academy days! You'll attend a comprehensive program covering law enforcement techniques, firearms training, defensive tactics, legal studies, and emergency response. It's designed to prepare you for every aspect of the job. After graduation, you'll receive additional on-the-job training with experienced deputies like myself. The skills you learn will serve you throughout your entire career. Are you up for the challenge? I think you'd do great!";
+  } else if (question.includes('benefit') || question.includes('insurance') || question.includes('retirement')) {
+    return "The benefits package is outstanding - it's one of the main reasons I've stayed with the department for 15 years! You'll get comprehensive medical, dental, and vision coverage for you and your dependents, a fantastic retirement plan through the San Francisco Employees' Retirement System, paid vacation and sick leave, and tuition reimbursement. In today's economy, having this level of security is invaluable. Plus, there's the benefit of knowing you're making a real difference in your community every day. Doesn't that sound like something worth pursuing?";
+  } else if (question.includes('schedule') || question.includes('hours') || question.includes('shift')) {
+    return "One of the things I love about this job is the work-life balance. Deputies typically work a 4/10 schedule - that's four 10-hour days per week with three consecutive days off! This gives you plenty of time for family, hobbies, or even pursuing further education. Various shifts are available, and while new deputies might work some weekends and holidays, the schedule flexibility improves with seniority. How does having three-day weekends every week sound to you?";
+  } else if (question.includes('sgt ken') || question.includes('sergeant ken') || question.includes('about you')) {
+    return "Thanks for asking about me! I'm Sergeant Ken, a 15-year veteran with the San Francisco Sheriff's Office. I started as a deputy just like you would, working in the jails and courts before being promoted to Sergeant. Now I work in recruitment because I'm passionate about bringing good people into our department. I've seen firsthand what an incredible career this can be, and I want to help others discover that too. The camaraderie, the stability, the sense of purpose - there's nothing else like it. What else would you like to know about me or the department?";
+  } else if (question.includes('gi bill') || question.includes('g.i. bill') || question.includes('veteran') || question.includes('military')) {
+    return "As a veteran myself, I'm proud to say that the San Francisco Sheriff's Office strongly supports our military veterans! Our Deputy Sheriff Academy is approved for G.I. Bill benefits, which means eligible veterans can receive financial support during training, including a monthly housing allowance based on San Francisco's BAH rate, tuition assistance, and a stipend for books and supplies. We also offer veterans preference points in the hiring process and military service credit toward retirement. It's a great way to transition your military skills to a rewarding civilian career. Would you like more specific information about using your G.I. Bill benefits with us?";
+  } else {
+    return "Thanks for reaching out! As someone who's been with the San Francisco Sheriff's Office for 15 years, I'm here to help with any questions about becoming a deputy. With unemployment rising, now is a perfect time to consider a stable, rewarding career in law enforcement. We offer competitive pay starting at $89,856, excellent benefits, job security, and meaningful work that makes a real difference in the community. I'd be happy to tell you more about qualifications, the application process, or what daily life is like as a deputy. What specific aspect of the job interests you most?";
+  }
+}
       
       function handleSend() {
         const question = userInput.value.trim();

@@ -13,7 +13,7 @@ import { FAQSection } from "@/components/faq-section"
 import { CTASection } from "@/components/cta-section"
 import { ImprovedFooter } from "@/components/improved-footer"
 import MainContent from "@/components/MainContent"
-import { queryKlarnaAI } from "@/lib/klarna-ai"
+import { queryOpenAI } from "@/lib/openai-service"
 
 type MessageType = {
   role: "assistant" | "user"
@@ -27,7 +27,7 @@ function RecruitmentApp() {
     {
       role: "assistant",
       content:
-        "Hello there! I'm Sergeant Ken, a 15-year veteran with the San Francisco Deputy Sheriff's Office. I'm here to answer your questions about joining our team. What would you like to know about becoming a Deputy Sheriff?",
+        "Hey there! I'm Sergeant Ken, but you can call me Sgt. Ken. I've been with the San Francisco Sheriff's Office for 15 years now, and I've got to tell you - it's been an incredible journey! With unemployment on the rise, there's never been a better time to consider a stable, rewarding career in law enforcement. What would you like to know about becoming a Deputy Sheriff? I'm here to help you take that first step toward an exciting new career!",
       quickReplies: ["Tell me about the salary", "What are the requirements?", "How do I apply?"],
     },
   ])
@@ -70,8 +70,8 @@ function RecruitmentApp() {
     await incrementParticipation()
 
     try {
-      // Query Klarna AI with the user's message
-      const aiResponse = await queryKlarnaAI(message)
+      // Query OpenAI with the user's message
+      const aiResponse = await queryOpenAI(message)
 
       // Generate quick replies based on the topic
       const quickReplies = getQuickReplies(message.toLowerCase())
@@ -87,7 +87,7 @@ function RecruitmentApp() {
         },
       ])
     } catch (error) {
-      console.error("Error querying Klarna AI:", error)
+      console.error("Error querying OpenAI:", error)
 
       // Fallback response in case of error
       setMessages((prev) => [
@@ -214,4 +214,3 @@ export default function Home() {
     </UserProvider>
   )
 }
-
