@@ -1,27 +1,32 @@
-import fs from "fs"
-import path from "path"
+// This is a serverless-compatible version of the PDF service
+// It doesn't rely on the Node.js fs module
 
-// Cache for PDF content to avoid repeated file reads
+// Cache for PDF content to avoid repeated requests
 const pdfContentCache: Record<string, string> = {}
 
 /**
  * Check if a PDF file exists in the documents directory
+ * Note: In a serverless environment, we can't directly check the filesystem
+ * So we'll assume the file exists if it's one of our known files
  */
 export function pdfExists(filename: string): boolean {
-  try {
-    const documentsDir = path.join(process.cwd(), "public/documents")
-    const filePath = path.join(documentsDir, filename)
-    return fs.existsSync(filePath)
-  } catch (error) {
-    console.error(`Error checking if PDF exists: ${error}`)
-    return false
-  }
+  const knownFiles = [
+    "sfers-guide.pdf",
+    "sfers-guide.pdf.pdf",
+    "cba-2023.pdf",
+    "cba-2023.pdf.pdf",
+    "employee-handbook.pdf",
+    "employee-handbook.pdf.pdf",
+    "health-benefits-guide.pdf",
+    "gi-bill-benefits.pdf",
+  ]
+
+  return knownFiles.includes(filename)
 }
 
 /**
  * Get the content of a PDF file
- * Note: This is a simplified implementation that doesn't actually extract text from PDFs
- * In a production environment, you would use a library like pdf-parse or pdfjs-dist
+ * Note: This is a simulated implementation for serverless environments
  */
 export async function getPDFContent(filename: string): Promise<string> {
   // Check if content is already cached
@@ -29,22 +34,11 @@ export async function getPDFContent(filename: string): Promise<string> {
     return pdfContentCache[filename]
   }
 
-  try {
-    const documentsDir = path.join(process.cwd(), "public/documents")
-    const filePath = path.join(documentsDir, filename)
+  // Simulate PDF content based on filename
+  let content = ""
 
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      console.error(`PDF file not found: ${filePath}`)
-      return `[PDF content for ${filename} not available]`
-    }
-
-    // In a real implementation, you would extract text from the PDF here
-    // For now, we'll return a placeholder based on the filename
-    let content = ""
-
-    if (filename === "sfers-guide.pdf" || filename === "sfers-guide.pdf.pdf") {
-      content = `
+  if (filename === "sfers-guide.pdf" || filename === "sfers-guide.pdf.pdf") {
+    content = `
 San Francisco Employees' Retirement System (SFERS) Guide
 
 RETIREMENT BENEFITS FOR DEPUTY SHERIFFS
@@ -83,65 +77,56 @@ RETIREMENT PLANNING:
 - Online calculators are available to estimate your benefits
 
 For more information, contact the SFERS office at (415) 487-7000 or visit sfers.org.
-      `
-    } else if (filename === "cba-2023.pdf" || filename === "cba-2023.pdf.pdf") {
-      content = `
+    `
+  } else if (filename === "cba-2023.pdf" || filename === "cba-2023.pdf.pdf") {
+    content = `
 Collective Bargaining Agreement
 Between the City and County of San Francisco
 and the Deputy Sheriffs' Association
 July 1, 2022 - June 30, 2025
 
 [Content of the collective bargaining agreement would appear here]
-      `
-    } else if (filename === "employee-handbook.pdf" || filename === "employee-handbook.pdf.pdf") {
-      content = `
+    `
+  } else if (filename === "employee-handbook.pdf" || filename === "employee-handbook.pdf.pdf") {
+    content = `
 San Francisco Sheriff's Office
 Employee Handbook
 
 [Content of the employee handbook would appear here]
-      `
-    } else if (filename === "health-benefits-guide.pdf") {
-      content = `
+    `
+  } else if (filename === "health-benefits-guide.pdf") {
+    content = `
 Health Benefits Guide for San Francisco Sheriff's Office Employees
 
 [Content of the health benefits guide would appear here]
-      `
-    } else if (filename === "gi-bill-benefits.pdf") {
-      content = `
+    `
+  } else if (filename === "gi-bill-benefits.pdf") {
+    content = `
 G.I. Bill Benefits for San Francisco Sheriff's Office Academy
 
 [Content of the G.I. Bill benefits guide would appear here]
-      `
-    } else {
-      content = `[PDF content for ${filename}]`
-    }
-
-    // Cache the content for future requests
-    pdfContentCache[filename] = content
-
-    return content
-  } catch (error) {
-    console.error(`Error reading PDF: ${error}`)
-    return `[Error reading PDF: ${filename}]`
+    `
+  } else {
+    content = `[PDF content for ${filename}]`
   }
+
+  // Cache the content for future requests
+  pdfContentCache[filename] = content
+
+  return content
 }
 
 /**
  * List all PDF files in the documents directory
+ * Note: In a serverless environment, we can't directly list files
+ * So we'll return our known files
  */
 export function listPDFFiles(): string[] {
-  try {
-    const documentsDir = path.join(process.cwd(), "public/documents")
-
-    if (!fs.existsSync(documentsDir)) {
-      console.log("Documents directory does not exist")
-      return []
-    }
-
-    const files = fs.readdirSync(documentsDir)
-    return files.filter((file) => file.toLowerCase().endsWith(".pdf"))
-  } catch (error) {
-    console.error(`Error listing PDF files: ${error}`)
-    return []
-  }
+  return [
+    "sfers-guide.pdf",
+    "cba-2023.pdf",
+    "employee-handbook.pdf",
+    "health-benefits-guide.pdf",
+    "gi-bill-benefits.pdf",
+  ]
 }
