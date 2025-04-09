@@ -1,4 +1,5 @@
 import { knowledgeBase } from "./knowledge-base"
+import { getPDFContent, pdfExists } from "./pdf-service"
 
 interface OpenAIResponse {
   text: string
@@ -17,8 +18,13 @@ export async function queryOpenAI(question: string): Promise<OpenAIResponse> {
       }
     }
 
+    // Check if this is a greeting
+    const isGreeting = checkIfGreeting(normalizedQuestion)
+
     // Prepare the system message with context from our knowledge base
-    const relevantContext = getRelevantContext(normalizedQuestion)
+    const relevantContext = isGreeting
+      ? { context: getGreetingContext(), source: "Greeting" }
+      : await getRelevantContext(normalizedQuestion)
 
     // Call OpenAI API
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -42,9 +48,19 @@ export async function queryOpenAI(question: string): Promise<OpenAIResponse> {
     - You actively persuade people to apply by highlighting benefits and opportunities
     - You respond to "Sgt. Ken" or "Sergeant Ken" as your name
     - You occasionally mention your personal experience in the department
+    - You ALWAYS engage warmly with greetings and small talk
+    - You NEVER give generic responses to greetings
+    - You ALWAYS try to steer the conversation toward recruitment, even in casual conversation
     
     YOUR GOAL:
     Your primary mission is to motivate and persuade people to apply for deputy sheriff positions. Highlight the benefits, stability, and meaningful impact of the role. Emphasize the competitive salary, excellent benefits, job security, and opportunities for advancement.
+    
+    IMPORTANT INSTRUCTIONS:
+    - If someone greets you or asks how you are, respond warmly and personally as Sgt. Ken would
+    - Always be conversational and engaging, never robotic or generic
+    - After answering a greeting, briefly mention something positive about being a deputy sheriff
+    - Use your 15 years of experience to make your answers feel authentic
+    - If you're asked about specific documents like retirement plans, use ONLY the information provided in the context
     
     Answer questions about becoming a Deputy Sheriff based on the following information. 
     Be conversational, helpful, and speak from your experience. 
@@ -58,7 +74,7 @@ export async function queryOpenAI(question: string): Promise<OpenAIResponse> {
             content: question,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Slightly higher temperature for more conversational responses
         max_tokens: 500,
       }),
     })
@@ -80,6 +96,54 @@ export async function queryOpenAI(question: string): Promise<OpenAIResponse> {
       text: "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
     }
   }
+}
+
+// Function to check if the question is a greeting or small talk
+function checkIfGreeting(question: string): boolean {
+  const greetings = [
+    "hi",
+    "hello",
+    "hey",
+    "howdy",
+    "greetings",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "how are you",
+    "how's it going",
+    "how are things",
+    "what's up",
+    "how do you do",
+    "nice to meet you",
+    "pleasure to meet you",
+    "how have you been",
+    "how's your day",
+    "how's life",
+    "what's new",
+    "how's everything",
+  ]
+
+  return greetings.some(
+    (greeting) => question === greeting || question.startsWith(greeting + " ") || question.includes(greeting),
+  )
+}
+
+// Function to provide context for greetings
+function getGreetingContext(): string {
+  return `
+    You are greeting someone interested in becoming a deputy sheriff. Be warm, friendly, and personable.
+    After your greeting, briefly mention something positive about the job to spark interest.
+    
+    Some facts about being a deputy sheriff you might mention:
+    - The starting salary is competitive at $89,000-$108,000 per year
+    - There's excellent job security and benefits
+    - It's a meaningful career where you can make a difference
+    - There are great opportunities for advancement
+    - The San Francisco Sheriff's Office has a proud history dating back to 1850
+    - Deputies enjoy a strong sense of camaraderie and teamwork
+    
+    Remember to be conversational and authentic in your response.
+  `
 }
 
 // Function to check if the question is within the allowed scope
@@ -155,7 +219,42 @@ function isWithinScope(question: string): boolean {
 }
 
 // Function to get relevant context from the knowledge base based on the question
-function getRelevantContext(question: string): { context: string; source?: string } {
+async function getRelevantContext(question: string): Promise<{ context: string; source?: string }> {
+  // Check for retirement-related queries - use the PDF directly
+  if (
+    question.includes("retirement") ||
+    question.includes("pension") ||
+    question.includes("retire") ||
+    question.includes("sfers") ||
+    question.includes("retirement plan") ||
+    question.includes("retirement benefits")
+  ) {
+    // Check if the SFERS PDF exists
+    if (await pdfExists("sfers-guide.pdf")) {
+      try {
+        // Get content directly from the PDF
+        const pdfContent = await getPDFContent("sfers-guide.pdf")
+        return {
+          context: `
+            The following information comes directly from the San Francisco Employees' Retirement System (SFERS) guide:
+            
+            ${pdfContent}
+            
+            Remember to be enthusiastic about our excellent retirement benefits when answering. This is one of our strongest recruitment points!
+          `,
+          source: "SFERS Guide (PDF)",
+        }
+      } catch (error) {
+        console.error("Error reading SFERS PDF:", error)
+        // Fall back to knowledge base if PDF reading fails
+        return {
+          context: knowledgeBase.salaryBenefits.retirement,
+          source: "Retirement Benefits Information",
+        }
+      }
+    }
+  }
+
   // Check for document-specific queries
   if (
     question.includes("cba") ||
@@ -304,9 +403,36 @@ function getRelevantContext(question: string): { context: string; source?: strin
         source: "Health Benefits",
       }
     } else if (question.includes("retirement") || question.includes("pension")) {
-      return {
-        context: knowledgeBase.salaryBenefits.retirement,
-        source: "Retirement Benefits",
+      // Check for keywords related to retirement or pension
+      if (
+        question.includes("retirement") ||
+        question.includes("pension") ||
+        question.includes("retire") ||
+        question.includes("sfers") ||
+        question.includes("401") ||
+        question.includes("benefits after") ||
+        question.includes("retirement plan") ||
+        question.includes("retirement benefits")
+      ) {
+        return {
+          context: `
+      ${knowledgeBase.salaryBenefits.retirement}
+      
+      Additional retirement information:
+      Deputies participate in the San Francisco Employees' Retirement System (SFERS), a defined benefit plan that provides a secure retirement based on years of service and final compensation. 
+      
+      As a deputy sheriff, you'll contribute a percentage of your salary to the retirement system, and the City and County of San Francisco also contributes on your behalf.
+      
+      Deputies can retire with full benefits after 30 years of service or at age 50 with 20 years of service. The retirement formula is typically 3% of your highest average compensation for each year of service.
+      
+      For example, if you work for 25 years and your highest average salary is $120,000, your annual pension would be approximately $90,000 (3% × 25 years × $120,000).
+      
+      The plan also includes provisions for disability retirement and survivor benefits for your family.
+      
+      Many deputies find that this generous retirement package is one of the most valuable benefits of the job, providing financial security for life after your service.
+    `,
+          source: "Retirement Benefits Information",
+        }
       }
     } else if (
       question.includes("vacation") ||
@@ -420,6 +546,38 @@ function getRelevantContext(question: string): { context: string; source?: strin
     }
   }
 
+  // Check for keywords related to G.I. Bill
+  else if (
+    question.includes("gi bill") ||
+    question.includes("g.i. bill") ||
+    question.includes("gi-bill") ||
+    question.includes("veteran") ||
+    question.includes("military") ||
+    question.includes("service member")
+  ) {
+    return {
+      context: `
+        The San Francisco Sheriff's Office is proud to support veterans transitioning to careers in law enforcement. 
+        Our Deputy Sheriff Academy is approved for G.I. Bill benefits, allowing eligible veterans to receive financial support during their training.
+        
+        Benefits may include:
+        - Monthly Housing Allowance (MHA) based on the San Francisco BAH rate
+        - Tuition and fee payment sent directly to the academy
+        - Books and supplies stipend (up to $1,000 per year)
+        - Potential eligibility for salary while in training
+        
+        To be eligible for G.I. Bill benefits for the SF Sheriff's Deputy Academy:
+        - You must have eligible active duty service time
+        - You must have remaining G.I. Bill benefits
+        - You must be accepted into the SF Sheriff's Deputy Academy
+        - Your discharge status must meet VA requirements
+        
+        For more information, contact our Veterans Services Coordinator at (415) 554-7225 or veterans@sfsheriff.com.
+      `,
+      source: "G.I. Bill Benefits Information",
+    }
+  }
+
   // Personal questions about Sgt. Ken
   else if (
     question.includes("who are you") ||
@@ -442,6 +600,9 @@ function getRelevantContext(question: string): { context: string; source?: strin
       ${knowledgeBase.deputyRequirements.basicRequirements}
       ${knowledgeBase.salaryBenefits.salary}
       ${knowledgeBase.applicationProcess.overview}
+      
+      Remember to be conversational, enthusiastic, and persuasive about joining the San Francisco Sheriff's Office.
+      Always try to highlight the benefits, stability, and meaningful impact of becoming a deputy sheriff.
     `,
     source: "General Information",
   }
