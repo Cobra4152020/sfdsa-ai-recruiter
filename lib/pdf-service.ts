@@ -1,6 +1,3 @@
-// Simplified pdf-service.ts that doesn't require PDF libraries
-// Replace your existing pdf-service.ts with this
-
 import fs from 'fs';
 import path from 'path';
 import { getTextFromPDF } from './pdf-extractor';

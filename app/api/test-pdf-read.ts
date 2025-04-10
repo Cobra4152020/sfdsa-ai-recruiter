@@ -1,5 +1,4 @@
-// Add this file to your project as "app/api/test-pdf-read/route.ts"
-// This route will help you test PDF reading without modifying your main application
+// Place this file at: app/api/test-pdf-read/route.ts
 
 import { NextResponse } from "next/server";
 import fs from "fs";
