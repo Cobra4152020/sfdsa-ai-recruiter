@@ -30,19 +30,25 @@ export async function getTextFromPDF(filename: string): Promise<string> {
     // Read the file as buffer
     const dataBuffer = fs.readFileSync(filePath)
 
-    // Parse PDF using pdf-parse
-    const data = await pdfParse(dataBuffer)
+    try {
+      // Parse PDF using pdf-parse
+      const data = await pdfParse(dataBuffer)
 
-    // If we couldn't extract text, return a message
-    if (!data.text || data.text.trim() === "") {
-      console.warn(`Could not extract text from ${filename}`)
-      return `[Could not extract text from ${filename}. This PDF may require a specialized parser.]`
+      // If we couldn't extract text, return a message
+      if (!data.text || data.text.trim() === "") {
+        console.warn(`Could not extract text from ${filename}`)
+        return `[Could not extract text from ${filename}. This PDF may require a specialized parser.]`
+      }
+
+      // Cache the content for future requests
+      pdfContentCache[filename] = data.text
+
+      console.log(`Successfully extracted text from ${filename}: ${data.text.substring(0, 100)}...`)
+      return data.text
+    } catch (pdfError) {
+      console.error(`Error parsing PDF: ${pdfError}`)
+      return `[Error parsing PDF ${filename}: ${pdfError.message}]`
     }
-
-    // Cache the content for future requests
-    pdfContentCache[filename] = data.text
-
-    return data.text
   } catch (error) {
     console.error(`Error extracting text from PDF: ${error}`)
     return `[Error extracting text from ${filename}: ${error.message}]`
@@ -69,12 +75,18 @@ export async function scanDocumentsDirectory(): Promise<Record<string, string>> 
     // Process PDF files
     for (const file of files) {
       if (file.toLowerCase().endsWith(".pdf")) {
-        // Get text content
-        const content = await getTextFromPDF(file)
+        try {
+          // Get text content
+          const content = await getTextFromPDF(file)
 
-        // Store with filename as key (without extension)
-        const key = file.replace(/\.pdf$/i, "").replace(/-/g, "_")
-        results[key] = content
+          // Store with filename as key (without extension)
+          const key = file.replace(/\.pdf$/i, "").replace(/-/g, "_")
+          results[key] = content
+        } catch (error) {
+          console.error(`Error processing ${file}: ${error.message}`)
+          // Continue with other files even if one fails
+          results[file.replace(/\.pdf$/i, "").replace(/-/g, "_")] = `[Error: ${error.message}]`
+        }
       }
     }
 

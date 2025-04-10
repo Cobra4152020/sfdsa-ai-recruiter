@@ -1,12 +1,16 @@
 {
-  "name": "my-v0-project",
+  "name": "sf-sheriff-recruitment",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "create-test-pdf": "node scripts/create-test-pdf.js",
+    "create-sample-pdfs": "node scripts/create-sample-pdfs.js",
+    "test-pdf-extraction": "node scripts/test-pdf-extraction.js",
+    "prebuild": "node scripts/create-test-pdf.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

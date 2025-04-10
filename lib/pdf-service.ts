@@ -1,65 +1,91 @@
-import fs from 'fs';
-import path from 'path';
-import { getTextFromPDF } from './pdf-extractor';
+"use server"
+
+import fs from "fs"
+import path from "path"
+import { getTextFromPDF } from "./pdf-extractor"
+
+// Cache for PDF content to avoid repeated extraction
+const pdfContentCache: Record<string, string> = {}
 
 // Get the path to the documents directory
 function getDocumentsDir(): string {
-  return path.join(process.cwd(), 'public', 'documents');
+  return path.join(process.cwd(), "public", "documents")
 }
 
-// Check if a file exists
-export function pdfExists(filename: string): Promise<boolean> {
+// Check if a PDF exists
+export async function pdfExists(filename: string): Promise<boolean> {
   try {
-    const filePath = path.join(getDocumentsDir(), filename);
-    const exists = fs.existsSync(filePath);
-    console.log(`Checking if file exists: ${filename} - ${exists ? 'Yes' : 'No'}`);
-    return Promise.resolve(exists);
+    const filePath = path.join(getDocumentsDir(), filename)
+    return fs.existsSync(filePath)
   } catch (error) {
-    console.error(`Error checking if file exists: ${error}`);
-    return Promise.resolve(false);
+    console.error(`Error checking if PDF exists: ${error}`)
+    return false
   }
 }
 
-// Get content from a file
+// Get content from a PDF
 export async function getPDFContent(filename: string): Promise<string> {
+  // Check if content is already in cache
+  if (pdfContentCache[filename]) {
+    console.log(`Using cached content for ${filename}`)
+    return pdfContentCache[filename]
+  }
+
   try {
-    const filePath = path.join(getDocumentsDir(), filename);
-    
+    const filePath = path.join(getDocumentsDir(), filename)
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      console.error(`File not found: ${filePath}`);
-      
-      // Fall back to simulated content
-      return getFallbackPDFContent(filename);
+      console.error(`PDF file not found: ${filePath}`)
+
+      // Return simulated content as fallback
+      return getSimulatedContent(filename)
     }
-    
-    console.log(`Reading content from: ${filePath}`);
-    
-    // Read the file as text
-    const content = await getTextFromPDF(filename);
-    
-    // If we got an error message back, fall back to simulated content
-    if (content.startsWith('[') && content.includes('Error')) {
-      console.warn(`Error extracting content, falling back to simulated content`);
-      return getFallbackPDFContent(filename);
-    }
-    
-    return content;
+
+    // Extract text from the PDF
+    const content = await getTextFromPDF(filename)
+
+    // Cache the content for future requests
+    pdfContentCache[filename] = content
+
+    console.log(`Successfully extracted and cached content from ${filename}`)
+    return content
   } catch (error) {
-    console.error(`Error reading file content: ${error}`);
-    
-    // Fall back to simulated content in case of error
-    return getFallbackPDFContent(filename);
+    console.error(`Error reading PDF content: ${error}`)
+
+    // Return simulated content as fallback
+    return getSimulatedContent(filename)
   }
 }
 
-// Provide fallback content for when file reading fails
-function getFallbackPDFContent(filename: string): string {
-  console.log(`Using fallback content for: ${filename}`);
-  
-  // Simulated content for different files
-  const pdfContents: Record<string, string> = {
-    "sfers-guide.pdf": `SAN FRANCISCO EMPLOYEES' RETIREMENT SYSTEM (SFERS) GUIDE
+// List all PDF files
+export async function listAvailablePDFs(): Promise<string[]> {
+  try {
+    const documentsDir = getDocumentsDir()
+
+    // Check if directory exists
+    if (!fs.existsSync(documentsDir)) {
+      console.warn(`Documents directory not found: ${documentsDir}`)
+      return []
+    }
+
+    // Read directory and filter for PDF files
+    const files = fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
+
+    console.log(`Found ${files.length} PDF files in ${documentsDir}`)
+    return files
+  } catch (error) {
+    console.error(`Error listing PDFs: ${error}`)
+    return []
+  }
+}
+
+// Provide simulated content as fallback
+function getSimulatedContent(filename: string): string {
+  const lowerFilename = filename.toLowerCase()
+
+  if (lowerFilename.includes("sfers") || lowerFilename.includes("retirement")) {
+    return `SAN FRANCISCO EMPLOYEES' RETIREMENT SYSTEM (SFERS) GUIDE
 FOR DEPUTY SHERIFFS
 
 RETIREMENT PLAN OVERVIEW
@@ -70,33 +96,22 @@ RETIREMENT FORMULA
 • This means you earn 3% of your final compensation for each year of service when retiring at age 50 or older
 • Maximum benefit: 90% of final compensation (after 30 years of service)
 
+RETIREMENT PERCENTAGE BY YEARS OF SERVICE
+• 5 years: 15% of final compensation
+• 10 years: 30% of final compensation
+• 15 years: 45% of final compensation
+• 20 years: 60% of final compensation
+• 25 years: 75% of final compensation
+• 30 years: 90% of final compensation (maximum)
+
 ELIGIBILITY REQUIREMENTS
 • Service Retirement: Age 50 with at least 5 years of service
 • Service Retirement: Any age with 30 years of service
-• Vesting: 5 years of credited service
+• Vesting: 5 years of credited service`
+  }
 
-EXAMPLE CALCULATION
-• Deputy with 25 years of service retiring at age 50
-• Final compensation: $120,000
-• Annual pension: $120,000 × 25 years × 3% = $90,000 per year
-• That's 75% of final compensation guaranteed for life`,
-
-    "retirement.txt": `SAN FRANCISCO SHERIFF'S OFFICE RETIREMENT BENEFITS
-
-RETIREMENT PERCENTAGES:
-- 3% per year of service at age 50
-- Maximum benefit: 90% of final compensation
-- Example: 25 years of service = 75% of final compensation
-
-ELIGIBILITY:
-- Age 50 with 5+ years of service
-- Any age with 30+ years of service
-- Vesting after 5 years
-
-PENSION CALCULATION:
-Final Compensation × Years of Service × 3% = Annual Pension Benefit`,
-
-    "cba-2023.pdf": `COLLECTIVE BARGAINING AGREEMENT 2023
+  if (lowerFilename.includes("cba") || lowerFilename.includes("bargaining")) {
+    return `COLLECTIVE BARGAINING AGREEMENT 2023
 SAN FRANCISCO DEPUTY SHERIFFS' ASSOCIATION
 
 ARTICLE I - REPRESENTATION
@@ -106,50 +121,16 @@ The Deputy Sheriffs' Association (DSA) is recognized as the exclusive representa
 • 8306 - Sheriff's Sergeant
 • 8308 - Sheriff's Lieutenant
 • 8310 - Sheriff's Captain
-• 8312 - Sheriff's Chief Deputy`,
+• 8312 - Sheriff's Chief Deputy`
+  }
 
-    "employee-handbook.pdf": `SAN FRANCISCO SHERIFF'S OFFICE
+  if (lowerFilename.includes("handbook") || lowerFilename.includes("employee")) {
+    return `SAN FRANCISCO SHERIFF'S OFFICE
 EMPLOYEE HANDBOOK
 
 INTRODUCTION
-Welcome to the San Francisco Sheriff's Office. This handbook provides essential information about your employment, benefits, and responsibilities as a member of our team.
-
-MISSION STATEMENT
-The San Francisco Sheriff's Office is dedicated to ensuring public safety, serving the courts, and securing the jails with the highest level of professionalism and integrity.`,
-  };
-  
-  // Return the content if it exists in our fallback database
-  return pdfContents[filename] || `Content not available for ${filename}`;
-}
-
-// List all available files
-export function listAvailablePDFs(): Promise<string[]> {
-  try {
-    const documentsDir = getDocumentsDir();
-    
-    // Check if directory exists
-    if (!fs.existsSync(documentsDir)) {
-      console.error(`Documents directory not found: ${documentsDir}`);
-      
-      // Fall back to simulated list
-      return Promise.resolve(["sfers-guide.pdf", "retirement.txt", "cba-2023.pdf", "employee-handbook.pdf"]);
-    }
-    
-    // Read directory and list all files
-    const files = fs.readdirSync(documentsDir);
-    
-    console.log(`Found ${files.length} files in documents directory: ${files.join(', ')}`);
-    
-    if (files.length === 0) {
-      // Fall back to simulated list if no files found
-      return Promise.resolve(["sfers-guide.pdf", "retirement.txt", "cba-2023.pdf", "employee-handbook.pdf"]);
-    }
-    
-    return Promise.resolve(files);
-  } catch (error) {
-    console.error(`Error listing files: ${error}`);
-    
-    // Fall back to simulated list in case of error
-    return Promise.resolve(["sfers-guide.pdf", "retirement.txt", "cba-2023.pdf", "employee-handbook.pdf"]);
+Welcome to the San Francisco Sheriff's Office. This handbook provides essential information about your employment, benefits, and responsibilities as a member of our team.`
   }
+
+  return `[Simulated content for ${filename}]`
 }
