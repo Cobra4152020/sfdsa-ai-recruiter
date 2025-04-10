@@ -22,6 +22,17 @@ export async function GET() {
     // Get list of PDF files
     const files = fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
 
+    // If no PDF files found, return early
+    if (files.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No PDF files found in documents directory",
+        path: documentsDir,
+        files: [],
+        fileContents: {},
+      })
+    }
+
     // Extract text from each PDF (first 500 characters only for preview)
     const fileContents: Record<string, string> = {}
 
