@@ -63,8 +63,8 @@ export async function scanDocumentsDirectory(): Promise<Record<string, string>> 
       return results
     }
 
-    // Read directory
-    const files = fs.readdirSync(documentsDir)
+    // Read directory asynchronously
+    const files = await fs.promises.readdir(documentsDir)
 
     // Process PDF files
     for (const file of files) {
@@ -88,7 +88,7 @@ export async function scanDocumentsDirectory(): Promise<Record<string, string>> 
 /**
  * List all available PDF files in the documents directory
  */
-export function listAvailablePDFs(): string[] {
+export async function listAvailablePDFs(): Promise<string[]> {
   try {
     const documentsDir = path.join(process.cwd(), "public", "documents")
 
@@ -98,8 +98,9 @@ export function listAvailablePDFs(): string[] {
       return []
     }
 
-    // Get all PDF files
-    return fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
+    // Get all PDF files asynchronously
+    const files = await fs.promises.readdir(documentsDir)
+    return files.filter((file) => file.toLowerCase().endsWith(".pdf"))
   } catch (error) {
     console.error(`Error listing PDFs: ${error}`)
     return []
