@@ -22,7 +22,30 @@ export async function pdfExists(filename: string): Promise<boolean> {
   }
 }
 
-// Get content from a PDF
+// List all PDF files
+export async function listAvailablePDFs(): Promise<string[]> {
+  try {
+    const documentsDir = getDocumentsDir()
+
+    // Check if directory exists
+    if (!fs.existsSync(documentsDir)) {
+      console.warn(`Documents directory not found: ${documentsDir}`)
+      return []
+    }
+
+    // Read directory and filter for PDF files
+    const files = fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
+
+    console.log(`Found ${files.length} PDF files in ${documentsDir}`)
+    return files
+  } catch (error) {
+    console.error(`Error listing PDFs: ${error}`)
+    return []
+  }
+}
+
+// Get content from a PDF - this is kept for backward compatibility
+// but we're not using it for OpenAI integration anymore
 export async function getPDFContent(filename: string): Promise<string> {
   // Check if content is already in cache
   if (pdfContentCache[filename]) {
@@ -55,28 +78,6 @@ export async function getPDFContent(filename: string): Promise<string> {
 
     // Return simulated content as fallback
     return getSimulatedContent(filename)
-  }
-}
-
-// List all PDF files
-export async function listAvailablePDFs(): Promise<string[]> {
-  try {
-    const documentsDir = getDocumentsDir()
-
-    // Check if directory exists
-    if (!fs.existsSync(documentsDir)) {
-      console.warn(`Documents directory not found: ${documentsDir}`)
-      return []
-    }
-
-    // Read directory and filter for PDF files
-    const files = fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
-
-    console.log(`Found ${files.length} PDF files in ${documentsDir}`)
-    return files
-  } catch (error) {
-    console.error(`Error listing PDFs: ${error}`)
-    return []
   }
 }
 
