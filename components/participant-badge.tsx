@@ -1,4 +1,6 @@
+import React from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Shield, Award, Zap, Brain, CheckCircle, Link } from "lucide-react"
 
 export type ParticipantBadgeType =
   | "hard-charger"
@@ -6,7 +8,7 @@ export type ParticipantBadgeType =
   | "quick-learner"
   | "persistent-explorer"
   | "dedicated-applicant"
-  | "connector" // Added this type to match what's in BadgeLegend
+  | "connector"
 
 interface ParticipantBadgeProps {
   type: ParticipantBadgeType
@@ -15,10 +17,10 @@ interface ParticipantBadgeProps {
 }
 
 export function ParticipantBadge({ type, size = "md", showTooltip = true }: ParticipantBadgeProps) {
-  // Define fun badge designs with engaging animated emojis
+  // Define badge designs with Lucide icons instead of image files
   const badges = {
     "hard-charger": {
-      emoji: "💪",
+      icon: <Shield className="text-white" />,
       label: "Hard Charger",
       description: "Consistently asks questions and has applied",
       bgColor: "from-amber-500 to-orange-600",
@@ -26,7 +28,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       shadowColor: "rgba(245, 158, 11, 0.5)",
     },
     "deep-diver": {
-      emoji: "🔍",
+      icon: <Brain className="text-white" />,
       label: "Deep Diver",
       description: "Explores topics in great detail",
       bgColor: "from-blue-500 to-indigo-600",
@@ -34,7 +36,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       shadowColor: "rgba(59, 130, 246, 0.5)",
     },
     "quick-learner": {
-      emoji: "⚡",
+      icon: <Zap className="text-white" />,
       label: "Quick Learner",
       description: "Rapidly progresses through recruitment information",
       bgColor: "from-purple-500 to-violet-600",
@@ -42,7 +44,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       shadowColor: "rgba(139, 92, 246, 0.5)",
     },
     "persistent-explorer": {
-      emoji: "🧠",
+      icon: <Brain className="text-white" />,
       label: "Persistent Explorer",
       description: "Returns regularly to learn more",
       bgColor: "from-emerald-500 to-green-600",
@@ -50,7 +52,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       shadowColor: "rgba(16, 185, 129, 0.5)",
     },
     "dedicated-applicant": {
-      emoji: "✅",
+      icon: <CheckCircle className="text-white" />,
       label: "Dedicated Applicant",
       description: "Applied and continues to engage",
       bgColor: "from-red-500 to-rose-600",
@@ -58,7 +60,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       shadowColor: "rgba(239, 68, 68, 0.5)",
     },
     connector: {
-      emoji: "🔗",
+      icon: <Link className="text-white" />,
       label: "Connector",
       description: "Connects with other participants",
       bgColor: "from-cyan-500 to-teal-600",
@@ -69,7 +71,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
 
   // Add a fallback badge in case the type doesn't exist
   const badge = badges[type] || {
-    emoji: "🔔",
+    icon: <Award className="text-white" />,
     label: "Badge",
     description: "Achievement badge",
     bgColor: "from-gray-500 to-gray-600",
@@ -77,14 +79,20 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
     shadowColor: "rgba(107, 114, 128, 0.5)",
   }
 
-  // Size classes - making them smaller and more appropriate
+  // Size classes
   const sizeClasses = {
     sm: "h-6 w-6",
     md: "h-8 w-8",
     lg: "h-10 w-10",
   }
 
-  // Badge component with fun styling
+  const iconSizes = {
+    sm: "h-3 w-3",
+    md: "h-4 w-4",
+    lg: "h-5 w-5",
+  }
+
+  // Badge component with styling
   const BadgeComponent = (
     <div
       className={`relative inline-flex items-center justify-center rounded-full ${sizeClasses[size]} transition-all duration-300 transform hover:scale-110`}
@@ -96,7 +104,7 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
       <div
         className={`relative flex items-center justify-center h-full w-full rounded-full border ${badge.borderColor} bg-gradient-to-br ${badge.bgColor} overflow-hidden`}
       >
-        <span className="text-white text-lg">{badge.emoji}</span>
+        {React.cloneElement(badge.icon, { className: `${iconSizes[size]}` })}
       </div>
 
       {/* Subtle shine effect */}
@@ -123,4 +131,3 @@ export function ParticipantBadge({ type, size = "md", showTooltip = true }: Part
     BadgeComponent
   )
 }
-
