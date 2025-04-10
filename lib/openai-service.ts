@@ -1,53 +1,214 @@
-// Simple mock implementation of the OpenAI service
-// This will be replaced with actual OpenAI integration when API keys are available
+// Enhanced OpenAI service implementation that prioritizes PDF document content
 
 import { getKnowledgeBase } from "./knowledgeBase"
-import { getPDFContent, pdfExists } from "./pdf-service"
+import { getPDFContent, pdfExists, listAvailablePDFs } from "./pdf-service"
 
 type OpenAIResponse = {
   text: string
   source?: string
 }
 
+// Keep track of the last query to provide context for follow-up questions
+let lastQuery = ""
+let lastResponse = ""
+
 export async function queryOpenAI(query: string): Promise<OpenAIResponse> {
+  // Store the current query for context
+  const previousQuery = lastQuery
+  lastQuery = query
+
   // Convert query to lowercase for easier matching
   const queryLower = query.toLowerCase()
 
   // Check if this is a correction to previous information
   if (isCorrectionQuery(queryLower)) {
-    return handleCorrectionQuery(queryLower)
+    return handleCorrectionQuery(queryLower, previousQuery)
   }
+
+  // First, try to find relevant PDF content for ANY query
+  // This ensures PDF content is prioritized over hardcoded responses
+  try {
+    const pdfResponse = await findRelevantPDFContent(query)
+    if (pdfResponse) {
+      lastResponse = pdfResponse.text
+      return pdfResponse
+    }
+  } catch (error) {
+    console.error("Error searching PDF content:", error)
+  }
+
+  // If no relevant PDF content is found, proceed with specialized handlers
 
   // Check if this is a greeting or small talk
   if (isGreeting(queryLower)) {
-    return handleGreeting()
+    const response = handleGreeting()
+    lastResponse = response.text
+    return response
   }
 
   // Check for retirement-related queries
   if (isRetirementQuery(queryLower)) {
-    return handleRetirementQuery()
+    const response = await handleRetirementQuery()
+    lastResponse = response.text
+    return response
   }
 
   // Check for salary-related queries
   if (isSalaryQuery(queryLower)) {
-    return handleSalaryQuery()
+    const response = handleSalaryQuery()
+    lastResponse = response.text
+    return response
   }
 
   // Check for requirements-related queries
   if (isRequirementsQuery(queryLower)) {
-    return handleRequirementsQuery()
+    const response = handleRequirementsQuery()
+    lastResponse = response.text
+    return response
   }
 
   // Check for application process queries
   if (isApplicationQuery(queryLower)) {
-    return handleApplicationQuery()
+    const response = handleApplicationQuery()
+    lastResponse = response.text
+    return response
   }
 
   // Default to general knowledge base
-  return {
+  const response = {
     text: getGeneralResponse(query),
     source: "Knowledge Base",
   }
+  lastResponse = response.text
+  return response
+}
+
+// New function to search all PDFs for relevant content
+async function findRelevantPDFContent(query: string): Promise<OpenAIResponse | null> {
+  const queryLower = query.toLowerCase()
+  const pdfs = await listAvailablePDFs()
+
+  // Define keywords for each PDF to improve matching
+  const pdfKeywords: Record<string, string[]> = {
+    "sfers-guide.pdf": [
+      "retirement",
+      "pension",
+      "retire",
+      "sfers",
+      "benefits",
+      "3%",
+      "age 50",
+      "service",
+      "years",
+      "compensation",
+      "vesting",
+      "cola",
+      "disability",
+    ],
+    "cba-2023.pdf": [
+      "collective",
+      "bargaining",
+      "agreement",
+      "cba",
+      "contract",
+      "union",
+      "compensation",
+      "overtime",
+      "premium",
+      "differential",
+      "longevity",
+    ],
+    "employee-handbook.pdf": [
+      "handbook",
+      "policy",
+      "procedure",
+      "mission",
+      "values",
+      "career",
+      "development",
+      "training",
+      "work-life",
+      "balance",
+    ],
+  }
+
+  // First, try to find a PDF that matches keywords in the query
+  let bestMatchPdf = null
+  let bestMatchScore = 0
+
+  for (const pdf of pdfs) {
+    const keywords = pdfKeywords[pdf] || []
+    let matchScore = 0
+
+    for (const keyword of keywords) {
+      if (queryLower.includes(keyword)) {
+        matchScore++
+      }
+    }
+
+    if (matchScore > bestMatchScore) {
+      bestMatchScore = matchScore
+      bestMatchPdf = pdf
+    }
+  }
+
+  // If we found a matching PDF with at least one keyword match
+  if (bestMatchPdf && bestMatchScore > 0) {
+    try {
+      const content = await getPDFContent(bestMatchPdf)
+
+      // Format the response in a conversational way
+      return {
+        text: formatPDFContentAsResponse(content, query),
+        source: `${bestMatchPdf} (PDF Document)`,
+      }
+    } catch (error) {
+      console.error(`Error getting content from ${bestMatchPdf}:`, error)
+    }
+  }
+
+  return null
+}
+
+// Format PDF content as a conversational response
+function formatPDFContentAsResponse(content: string, query: string): string {
+  // Extract the most relevant section based on the query
+  const sections = content.split("\n\n")
+  const queryLower = query.toLowerCase()
+
+  let relevantSection = ""
+  let highestRelevanceScore = 0
+
+  for (const section of sections) {
+    const sectionLower = section.toLowerCase()
+    let relevanceScore = 0
+
+    // Count how many words from the query appear in this section
+    const queryWords = queryLower.split(/\s+/)
+    for (const word of queryWords) {
+      if (word.length > 3 && sectionLower.includes(word)) {
+        relevanceScore++
+      }
+    }
+
+    if (relevanceScore > highestRelevanceScore) {
+      highestRelevanceScore = relevanceScore
+      relevantSection = section
+    }
+  }
+
+  // If we couldn't find a relevant section, use the whole content
+  if (!relevantSection) {
+    relevantSection = content
+  }
+
+  // Create a conversational introduction
+  const intro = `Based on our official documentation, I can tell you that:`
+
+  // Create a conversational conclusion
+  const conclusion = `\n\nIs there anything specific about this information you'd like me to clarify? I'm here to help you understand all the benefits of joining the San Francisco Sheriff's Office.`
+
+  return `${intro}\n\n${relevantSection}${conclusion}`
 }
 
 function isCorrectionQuery(query: string): boolean {
@@ -67,31 +228,40 @@ function isCorrectionQuery(query: string): boolean {
     "mistaken",
     "error",
     "mistake",
+    "errors",
+    "inaccurate",
+    "not accurate",
   ]
   return correctionPhrases.some((phrase) => query.includes(phrase))
 }
 
-function handleCorrectionQuery(query: string): OpenAIResponse {
+function handleCorrectionQuery(query: string, previousQuery: string): OpenAIResponse {
   // Check if the correction is about retirement
-  if (query.includes("retirement") || query.includes("pension") || query.includes("3%") || query.includes("age 55")) {
+  if (query.includes("retirement") || query.includes("pension") || query.includes("3%") || query.includes("age")) {
     return {
-      text: `You're absolutely right, and I apologize for the mistake! Thank you for the correction.
+      text: `You're absolutely right, and I apologize for the inaccurate information. Thank you for the correction!
 
-The correct retirement formula for San Francisco Deputy Sheriffs is 3% at age 50, not 55. This is part of the Safety Plan under SFERS.
+I should be providing you with information directly from our official documents. Let me try again with the correct information from our SFERS guide:
+
+The retirement formula for San Francisco Deputy Sheriffs is 3% at age 50 under the Safety Plan.
 
 This means:
 - You can retire as early as age 50 with at least 5 years of service
 - You earn 3% of your final compensation for each year of service
 - After 30 years of service, you can retire at any age with 90% of your final compensation
 
-This is one of the most generous retirement packages in law enforcement and allows deputies to retire earlier than many other professions. Is there anything else about our retirement benefits you'd like to know?`,
+I'll make sure to check our official documentation more carefully in the future. Is there anything specific about our retirement benefits you'd like me to clarify?`,
       source: "Correction",
     }
   }
 
   // Generic correction response
   return {
-    text: `You're right, and I appreciate the correction! As a recruitment officer, I want to make sure I'm giving you accurate information. Could you let me know which part was incorrect so I can provide you with the right details? I want to make sure you have all the correct information about our Sheriff's Office.`,
+    text: `You're absolutely right, and I apologize for providing incorrect information. Thank you for pointing this out!
+
+I should be referring directly to our official documentation rather than relying on my memory. Let me check our documents and provide you with the accurate information.
+
+Could you let me know which specific part was incorrect so I can address it properly? I want to make sure you have the correct information about our Sheriff's Office.`,
     source: "Correction",
   }
 }
@@ -150,18 +320,7 @@ async function handleRetirementQuery(): Promise<OpenAIResponse> {
     if (await pdfExists("sfers-guide.pdf")) {
       const pdfContent = await getPDFContent("sfers-guide.pdf")
       return {
-        text: `As a San Francisco Deputy Sheriff, you'll receive an outstanding retirement package through the San Francisco Employees' Retirement System (SFERS). Here's what you need to know:
-
-The retirement formula is 3% at age 50 under the Safety Plan. This means:
-
-- You can retire as early as age 50 with at least 5 years of service
-- You earn 3% of your final compensation for each year of service
-- For example, with 25 years of service, you'd receive 75% of your final compensation
-- With 30 years of service, you can retire at any age with 90% of your final compensation
-
-Let me give you a real-world example: If your final compensation is $120,000 and you retire after 25 years of service, your annual pension would be $90,000 per year ($120,000 × 25 × 3%) - that's 75% of your salary guaranteed for life!
-
-This is one of the most generous retirement packages in law enforcement and provides exceptional financial security. Would you like to know more about other benefits or aspects of the job?`,
+        text: formatPDFContentAsResponse(pdfContent, "retirement"),
         source: "SFERS Guide PDF",
       }
     }
@@ -173,7 +332,7 @@ This is one of the most generous retirement packages in law enforcement and prov
   return {
     text: `The San Francisco Sheriff's Office offers an excellent retirement package through the San Francisco Employees' Retirement System (SFERS). As a deputy sheriff, you'll be enrolled in a defined benefit plan that provides:
 
-- A retirement formula of 3% per year of service at age 50 (not 55)
+- A retirement formula of 3% per year of service at age 50
 - For example, after 25 years of service, you could retire with 75% of your final compensation
 - Full retirement eligibility after 30 years of service regardless of age
 - Disability and survivor benefits
