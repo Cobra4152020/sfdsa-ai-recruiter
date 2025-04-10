@@ -17,9 +17,6 @@ const handleCorrectionQuery = (query: string, previousQuery: string) => ({
   text: "Handling correction query...",
   source: "N/A",
 })
-const isGreeting = (query: string) => false
-const handleGreeting = () => ({ text: "Hello!", source: "N/A" })
-const isRetirementQuery = (query: string) => false
 
 export async function queryOpenAI(query: string): Promise<OpenAIResponse> {
   // Store the current query for context
@@ -316,20 +313,169 @@ function formatPDFContentAsResponse(content: string, query: string): string {
   return `${intro}\n\n${relevantSection}${conclusion}`
 }
 
-// The rest of the functions remain the same...
-// [Rest of the file with helper functions like isGreeting(), handleGreeting(), etc.]
+// Replace the placeholder implementations at the bottom of the file with these proper implementations:
 
-const isSalaryQuery = (query: string) => false
-const handleSalaryQuery = () => ({ text: "Handling salary query...", source: "N/A" })
-const isRequirementsQuery = (query: string) => false
-const handleRequirementsQuery = () => ({ text: "Handling requirements query...", source: "N/A" })
-const isApplicationQuery = (query: string) => false
-const handleApplicationQuery = () => ({ text: "Handling application query...", source: "N/A" })
-
-function getGeneralResponse(query: string): string {
-  return "This is a general response."
+// Check if query is about salary
+const isSalaryQuery = (query: string): boolean => {
+  const salaryKeywords = [
+    "salary",
+    "pay",
+    "money",
+    "compensation",
+    "wage",
+    "earn",
+    "income",
+    "dollar",
+    "payment",
+    "overtime",
+  ]
+  return salaryKeywords.some((keyword) => query.toLowerCase().includes(keyword))
 }
 
+// Handle salary queries
+const handleSalaryQuery = (): OpenAIResponse => {
+  return {
+    text: `Deputy Sheriff Recruits start at $89,856 annually. After academy graduation, Deputy Sheriffs earn $98,956 to $120,276 based on experience and qualifications. 
+
+Additional compensation includes premium pay for specialized assignments, bilingual skills, and night shifts. Overtime opportunities are also available, allowing many deputies to significantly increase their annual earnings.
+
+With unemployment rising in many sectors, the Sheriff's Office offers stable employment with guaranteed step increases and cost-of-living adjustments. Our comprehensive benefits package includes excellent health, dental, and vision coverage for you and your dependents.
+
+Would you like to know more about our benefits package or have specific questions about compensation?`,
+    source: "Salary Information",
+  }
+}
+
+// Check if query is about requirements
+const isRequirementsQuery = (query: string): boolean => {
+  const requirementsKeywords = [
+    "requirement",
+    "qualify",
+    "qualification",
+    "eligible",
+    "criteria",
+    "need to",
+    "must have",
+    "background",
+    "education",
+  ]
+  return requirementsKeywords.some((keyword) => query.toLowerCase().includes(keyword))
+}
+
+// Handle requirements queries
+const handleRequirementsQuery = (): OpenAIResponse => {
+  return {
+    text: `To become a San Francisco Deputy Sheriff, you need to meet these basic requirements:
+
+• U.S. citizenship or permanent resident alien who is eligible for and has applied for citizenship
+• Age 21+ by appointment time
+• High school diploma or GED (college preferred)
+• Valid driver's license
+• No felony convictions
+• Good moral character
+• Pass background checks, physical and psychological evaluations
+
+The physical ability test includes push-ups, sit-ups, a 1.5-mile run, and an obstacle course. Candidates should establish a regular workout routine focusing on cardio, strength, and flexibility.
+
+With the current rise in unemployment, many qualified candidates from various backgrounds are finding success in our hiring process. Would you like more specific information about any of these requirements?`,
+    source: "Qualification Requirements",
+  }
+}
+
+// Check if query is about application process
+const isApplicationQuery = (query: string): boolean => {
+  const applicationKeywords = [
+    "apply",
+    "application",
+    "process",
+    "how to",
+    "join",
+    "hiring",
+    "recruit",
+    "test",
+    "exam",
+    "interview",
+  ]
+  return applicationKeywords.some((keyword) => query.toLowerCase().includes(keyword))
+}
+
+// Handle application process queries
+const handleApplicationQuery = (): OpenAIResponse => {
+  return {
+    text: `The application process for becoming a Deputy Sheriff with the San Francisco Sheriff's Office involves several steps:
+
+1. Online application
+2. Written exam
+3. Physical ability test
+4. Oral interview
+5. Background investigation
+6. Medical examination
+7. Psychological evaluation
+8. Final review
+
+Successful candidates receive a conditional offer of employment, followed by academy training. The entire process typically takes 4-6 months.
+
+With unemployment rising, now is an excellent time to apply as we're actively recruiting to fill positions. Our recruiters can provide guidance throughout the process to help you succeed.
+
+Would you like more details about any specific step in the application process?`,
+    source: "Application Process",
+  }
+}
+
+// Check if query is about retirement
+const isRetirementQuery = (query: string): boolean => {
+  const retirementKeywords = ["retire", "retirement", "pension", "sfers", "401", "benefits after", "after service"]
+  return retirementKeywords.some((keyword) => query.toLowerCase().includes(keyword))
+}
+
+// Handle retirement queries
 async function handleRetirementQuery(query: string): Promise<OpenAIResponse> {
-  return { text: "Handling retirement query...", source: "N/A" }
+  return {
+    text: `Deputies participate in the San Francisco Employees' Retirement System (SFERS). This defined benefit plan provides a secure retirement based on years of service and final compensation.
+
+The retirement formula is 3% of your highest average compensation for each year of service at age 55. For example, if you work for 25 years and your highest average salary is $120,000, your annual pension would be approximately $90,000 (3% × 25 years × $120,000).
+
+Deputies can retire with full benefits after 30 years of service or at age 50 with 20 years of service. The plan also includes provisions for disability retirement and survivor benefits for your family.
+
+Many deputies find that this generous retirement package is one of the most valuable benefits of the job, providing financial security for life after your service.
+
+Would you like more specific information about the retirement benefits?`,
+    source: "Retirement Benefits",
+  }
+}
+
+// Check if query is a greeting
+const isGreeting = (query: string): boolean => {
+  const greetings = [
+    "hello",
+    "hi",
+    "hey",
+    "greetings",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "howdy",
+    "what's up",
+    "sup",
+  ]
+  return greetings.some((greeting) => query.toLowerCase().includes(greeting))
+}
+
+// Handle greeting
+const handleGreeting = (): OpenAIResponse => {
+  return {
+    text: `Hey there! I'm Sergeant Ken, but you can call me Sgt. Ken. I've been with the San Francisco Sheriff's Office for 15 years now, and I've got to tell you - it's been an incredible journey! 
+
+With unemployment on the rise, there's never been a better time to consider a stable, rewarding career in law enforcement. What would you like to know about becoming a Deputy Sheriff? I'm here to help you take that first step toward an exciting new career!`,
+    source: "Greeting",
+  }
+}
+
+// Provide a general response based on the query
+function getGeneralResponse(query: string): string {
+  return `Thanks for reaching out! As someone who's been with the San Francisco Sheriff's Office for 15 years, I'm here to help with any questions about becoming a deputy.
+
+With unemployment rising, now is a perfect time to consider a stable, rewarding career in law enforcement. We offer competitive pay starting at $89,856, excellent benefits, job security, and meaningful work that makes a real difference in the community.
+
+I'd be happy to tell you more about qualifications, the application process, or what daily life is like as a deputy. What specific aspect of the job interests you most?`
 }
