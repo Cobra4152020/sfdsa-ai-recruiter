@@ -13,6 +13,11 @@ export async function queryOpenAI(query: string): Promise<OpenAIResponse> {
   // Convert query to lowercase for easier matching
   const queryLower = query.toLowerCase()
 
+  // Check if this is a correction to previous information
+  if (isCorrectionQuery(queryLower)) {
+    return handleCorrectionQuery(queryLower)
+  }
+
   // Check if this is a greeting or small talk
   if (isGreeting(queryLower)) {
     return handleGreeting()
@@ -42,6 +47,52 @@ export async function queryOpenAI(query: string): Promise<OpenAIResponse> {
   return {
     text: getGeneralResponse(query),
     source: "Knowledge Base",
+  }
+}
+
+function isCorrectionQuery(query: string): boolean {
+  const correctionPhrases = [
+    "that's wrong",
+    "that is wrong",
+    "that's incorrect",
+    "that is incorrect",
+    "not correct",
+    "not right",
+    "that's not true",
+    "that is not true",
+    "you're wrong",
+    "you are wrong",
+    "incorrect information",
+    "false information",
+    "mistaken",
+    "error",
+    "mistake",
+  ]
+  return correctionPhrases.some((phrase) => query.includes(phrase))
+}
+
+function handleCorrectionQuery(query: string): OpenAIResponse {
+  // Check if the correction is about retirement
+  if (query.includes("retirement") || query.includes("pension") || query.includes("3%") || query.includes("age 55")) {
+    return {
+      text: `You're absolutely right, and I apologize for the mistake! Thank you for the correction.
+
+The correct retirement formula for San Francisco Deputy Sheriffs is 3% at age 50, not 55. This is part of the Safety Plan under SFERS.
+
+This means:
+- You can retire as early as age 50 with at least 5 years of service
+- You earn 3% of your final compensation for each year of service
+- After 30 years of service, you can retire at any age with 90% of your final compensation
+
+This is one of the most generous retirement packages in law enforcement and allows deputies to retire earlier than many other professions. Is there anything else about our retirement benefits you'd like to know?`,
+      source: "Correction",
+    }
+  }
+
+  // Generic correction response
+  return {
+    text: `You're right, and I appreciate the correction! As a recruitment officer, I want to make sure I'm giving you accurate information. Could you let me know which part was incorrect so I can provide you with the right details? I want to make sure you have all the correct information about our Sheriff's Office.`,
+    source: "Correction",
   }
 }
 
@@ -88,6 +139,7 @@ function isRetirementQuery(query: string): boolean {
     "benefits after retirement",
     "retirement plan",
     "retirement benefits",
+    "sfers",
   ]
   return retirementKeywords.some((keyword) => query.includes(keyword))
 }
@@ -98,7 +150,18 @@ async function handleRetirementQuery(): Promise<OpenAIResponse> {
     if (await pdfExists("sfers-guide.pdf")) {
       const pdfContent = await getPDFContent("sfers-guide.pdf")
       return {
-        text: pdfContent,
+        text: `As a San Francisco Deputy Sheriff, you'll receive an outstanding retirement package through the San Francisco Employees' Retirement System (SFERS). Here's what you need to know:
+
+The retirement formula is 3% at age 50 under the Safety Plan. This means:
+
+- You can retire as early as age 50 with at least 5 years of service
+- You earn 3% of your final compensation for each year of service
+- For example, with 25 years of service, you'd receive 75% of your final compensation
+- With 30 years of service, you can retire at any age with 90% of your final compensation
+
+Let me give you a real-world example: If your final compensation is $120,000 and you retire after 25 years of service, your annual pension would be $90,000 per year ($120,000 × 25 × 3%) - that's 75% of your salary guaranteed for life!
+
+This is one of the most generous retirement packages in law enforcement and provides exceptional financial security. Would you like to know more about other benefits or aspects of the job?`,
         source: "SFERS Guide PDF",
       }
     }
@@ -110,7 +173,7 @@ async function handleRetirementQuery(): Promise<OpenAIResponse> {
   return {
     text: `The San Francisco Sheriff's Office offers an excellent retirement package through the San Francisco Employees' Retirement System (SFERS). As a deputy sheriff, you'll be enrolled in a defined benefit plan that provides:
 
-- A retirement formula of 3% per year of service at age 55
+- A retirement formula of 3% per year of service at age 50 (not 55)
 - For example, after 25 years of service, you could retire with 75% of your final compensation
 - Full retirement eligibility after 30 years of service regardless of age
 - Disability and survivor benefits
