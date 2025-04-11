@@ -196,7 +196,7 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ question: question }),
+            body: JSON.stringify({ message: question }),
           });
           
           if (!response.ok) {
@@ -204,14 +204,11 @@
           }
           
           const data = await response.json();
-          return { 
-            text: data.text,
-            source: data.source
-          };
+          return data;
         } catch (error) {
           console.error('Error fetching AI response:', error);
           return { 
-            text: "I apologize, but I'm having trouble accessing that information right now. Please try again in a few moments or contact our recruitment team directly at (415) 554-7225.",
+            response: "I apologize, but I'm having trouble accessing that information right now. Please try again in a few moments or contact our recruitment team directly at (415) 554-7225.",
             source: null
           };
         }
@@ -245,7 +242,7 @@
         removeTypingIndicator();
         
         // Add assistant response
-        addMessage(aiData.text, false, aiData.source);
+        addMessage(aiData.response, false, aiData.source);
         
         isWaitingForResponse = false;
         sendButton.disabled = false;

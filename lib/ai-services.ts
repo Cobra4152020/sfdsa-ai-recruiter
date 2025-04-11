@@ -1,3 +1,5 @@
+"use server"
+
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { knowledgeBase } from "./knowledge-base"
@@ -151,6 +153,33 @@ async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
   }
 }
 
+// Helper function to find relevant context from knowledge base
+function findRelevantContext(question: string): string {
+  const normalizedQuestion = question.toLowerCase()
+  const relevantSections = []
+
+  // Check for keywords and add relevant sections
+  if (normalizedQuestion.includes("salary") || normalizedQuestion.includes("pay")) {
+    relevantSections.push(knowledgeBase.salaryBenefits.salary)
+  }
+  if (normalizedQuestion.includes("benefits")) {
+    relevantSections.push(knowledgeBase.salaryBenefits.healthBenefits)
+  }
+  if (normalizedQuestion.includes("requirements") || normalizedQuestion.includes("qualifications")) {
+    relevantSections.push(knowledgeBase.deputyRequirements.basicRequirements)
+  }
+  // Add more keyword checks as needed
+
+  // If no specific sections matched, provide general information
+  if (relevantSections.length === 0) {
+    relevantSections.push(knowledgeBase.sfsoInfo.overview)
+    relevantSections.push(knowledgeBase.applicationProcess.overview)
+  }
+
+  return relevantSections.join("\n\n")
+}
+
+// Make sure to export this function as a named export
 export async function queryAI(question: string) {
   try {
     // Check if the question is within scope
@@ -215,30 +244,4 @@ export async function queryAI(question: string) {
       confidence: 0.5,
     }
   }
-}
-
-// Helper function to find relevant context from knowledge base
-function findRelevantContext(question: string): string {
-  const normalizedQuestion = question.toLowerCase()
-  const relevantSections = []
-
-  // Check for keywords and add relevant sections
-  if (normalizedQuestion.includes("salary") || normalizedQuestion.includes("pay")) {
-    relevantSections.push(knowledgeBase.salaryBenefits.salary)
-  }
-  if (normalizedQuestion.includes("benefits")) {
-    relevantSections.push(knowledgeBase.salaryBenefits.healthBenefits)
-  }
-  if (normalizedQuestion.includes("requirements") || normalizedQuestion.includes("qualifications")) {
-    relevantSections.push(knowledgeBase.deputyRequirements.basicRequirements)
-  }
-  // Add more keyword checks as needed
-
-  // If no specific sections matched, provide general information
-  if (relevantSections.length === 0) {
-    relevantSections.push(knowledgeBase.sfsoInfo.overview)
-    relevantSections.push(knowledgeBase.applicationProcess.overview)
-  }
-
-  return relevantSections.join("\n\n")
 }

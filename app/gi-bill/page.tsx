@@ -12,7 +12,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import MainContent from "@/components/MainContent"
-import { queryOpenAI } from "@/lib/openai-service"
+// Import the entire module instead of just the function
+import * as aiService from "@/lib/ai-services"
 
 function GIBillContent() {
   const [isOptInFormOpen, setIsOptInFormOpen] = useState(false)
@@ -63,7 +64,7 @@ function GIBillContent() {
       }
 
       // Query OpenAI with the user's message
-      const aiResponse = await queryOpenAI(message)
+      const aiResponse = await aiService.queryAI(message)
 
       // If no specific G.I. Bill response, provide default G.I. Bill information
       let responseText = aiResponse.text

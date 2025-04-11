@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import MainContent from "@/components/MainContent"
+// Import the AI service
+import * as aiService from "@/lib/ai-services"
 
 function PracticeTestsContent() {
   const [isOptInFormOpen, setIsOptInFormOpen] = useState(false)
@@ -89,78 +91,56 @@ function PracticeTestsContent() {
       await incrementParticipation()
     }
 
-    // Simulate AI response based on the active tab and user message
-    setTimeout(() => {
-      let response = ""
-
+    try {
+      // If not logged in, prompt to sign up
       if (!isLoggedIn) {
-        response =
-          "Please sign in to access the practice test materials. This helps us track your progress and award badges for your achievements."
-      } else {
-        // Generate different responses based on the active tab
-        switch (activeTab) {
-          case "written":
-            if (
-              message.toLowerCase().includes("start") ||
-              message.toLowerCase().includes("practice test") ||
-              message.toLowerCase().includes("12")
-            ) {
-              response =
-                "Great! Here's a 12-question practice test for the Deputy Sheriff written exam:\n\n1. Which of the following is NOT a responsibility of a Deputy Sheriff?\nA) Maintaining security in county jails\nB) Providing court security\nC) Issuing driver's licenses\nD) Serving civil processes\n\n2. A suspect has the right to:\nA) Make unlimited phone calls\nB) Remain silent\nC) Have charges dismissed if not read their rights\nD) Speak to any attorney of their choosing at government expense\n\nPlease answer these first two questions, and I'll provide the next set along with feedback on your answers."
-            } else if (message.toLowerCase().includes("reading") || message.toLowerCase().includes("comprehension")) {
-              response =
-                "Here's a reading comprehension practice question:\n\nRead the following paragraph and answer the question below:\n\n'Deputy Ramirez was assigned to transport three inmates from the county jail to the courthouse. Upon arrival, she secured the inmates in the holding cell and completed the transfer paperwork. While conducting a security check, she noticed that one inmate appeared to be in medical distress. Following protocol, she immediately called for medical assistance while maintaining security of all inmates.'\n\nQuestion: What did Deputy Ramirez do after noticing an inmate in medical distress?\nA) Released the inmate from the holding cell\nB) Completed transfer paperwork\nC) Called for medical assistance\nD) Returned the inmate to the county jail"
-            } else {
-              response =
-                "I can help with written test preparation. Would you like to:\n\n1. Start a 12-question practice test\n2. Practice reading comprehension questions\n3. Practice writing skills questions\n4. Practice problem-solving questions\n\nJust let me know which option you prefer, or ask about a specific topic you'd like to focus on."
-            }
-            break
-
-          case "oral":
-            if (message.toLowerCase().includes("random") || message.toLowerCase().includes("question")) {
-              response =
-                "Here's an oral board practice question:\n\n\"Describe a time when you had to deal with a difficult person. How did you handle the situation, and what was the outcome?\"\n\nPlease provide your response as you would in an actual interview. After your answer, I'll provide feedback on your response structure, content, and delivery tips."
-            } else if (message.toLowerCase().includes("situational") || message.toLowerCase().includes("judgment")) {
-              response =
-                "Here's a situational judgment question:\n\n\"You're working in the jail and observe a fellow deputy using excessive force on an inmate who was verbally abusive but not physically resistant. What would you do in this situation?\"\n\nPlease provide your response as you would in an actual interview. After your answer, I'll provide feedback on your approach."
-            } else {
-              response =
-                "I can help you practice for the oral board interview. Would you like to:\n\n1. Practice with a random question\n2. Focus on situational judgment questions\n3. Practice questions about your background and experience\n4. Practice questions about your motivation to become a deputy\n\nJust let me know which option you prefer, or ask about a specific topic you'd like to focus on."
-            }
-            break
-
-          case "physical":
-            if (message.toLowerCase().includes("push") || message.toLowerCase().includes("push-up")) {
-              response =
-                "For the push-up component of the physical agility test, you'll need to perform as many proper form push-ups as possible in one minute. Here are some tips to improve your push-up performance:\n\n1. Practice proper form: Keep your body in a straight line from head to heels, hands shoulder-width apart\n2. Build endurance: Start with 3 sets of push-ups to failure, 3 times per week\n3. Incorporate variations: Wide push-ups, diamond push-ups, and incline/decline push-ups\n4. Progressive overload: Gradually increase repetitions each week\n5. Rest properly: Allow 48 hours between intense push-up workouts\n\nA good goal is to be able to perform at least 25-30 proper form push-ups in one minute. Would you like a specific training plan to improve your push-up count?"
-            } else if (message.toLowerCase().includes("run") || message.toLowerCase().includes("mile")) {
-              response =
-                "For the 1.5-mile run component, you'll need to complete the distance in under 14 minutes (though faster is better). Here are some training tips:\n\n1. Follow a progressive training plan: Start with a combination of running and walking if needed\n2. Interval training: Alternate between sprinting and jogging (e.g., 30 seconds sprint, 90 seconds jog)\n3. Hill training: Incorporate uphill runs to build strength and endurance\n4. Consistency: Run at least 3 times per week, gradually increasing distance\n5. Proper recovery: Include rest days and proper nutrition\n\nA sample 8-week plan might look like:\n- Weeks 1-2: Run/walk 3 times per week (2 minutes run, 1 minute walk) for 20 minutes\n- Weeks 3-4: Run 2 miles, 3 times per week\n- Weeks 5-6: Run 2.5 miles, 3 times per week + 1 interval session\n- Weeks 7-8: Run 3 miles, 3 times per week + 1 interval session\n\nWould you like more specific guidance on any aspect of run training?"
-            } else {
-              response =
-                "I can provide advice on preparing for the physical agility test. The test typically includes:\n\n1. Push-ups (maximum in 1 minute)\n2. Sit-ups (maximum in 1 minute)\n3. 1.5-mile run (timed)\n4. Obstacle course\n\nWhich specific component would you like training advice for? I can provide workout plans, technique tips, and progression strategies to help you pass with flying colors."
-            }
-            break
-
-          case "polygraph":
-            response =
-              "The polygraph (lie detector) examination is a standard part of the background investigation process. Here's what you should know:\n\n• Purpose: To verify the information you've provided and assess your honesty\n• Process: You'll be connected to sensors that monitor physiological responses while answering questions\n• Question Types: Relevant questions about your background, control questions, and irrelevant questions\n• Duration: Typically 2-3 hours including pre-test interview\n\nKey tips:\n1. Be completely honest on your application and during the exam\n2. Don't try to use countermeasures (they're detectable and raise red flags)\n3. Get proper rest before the exam\n4. Answer questions directly without volunteering extra information\n5. Disclose any issues upfront rather than hiding them\n\nIs there a specific aspect of the polygraph process you're concerned about?"
-            break
-
-          case "psychological":
-            response =
-              "The psychological evaluation for Deputy Sheriff candidates typically includes:\n\n1. Written Tests: Standardized psychological assessments like the MMPI-2 (Minnesota Multiphasic Personality Inventory)\n2. Clinical Interview: One-on-one interview with a psychologist\n\nThe evaluation assesses:\n• Emotional stability and stress tolerance\n• Judgment and decision-making abilities\n• Interpersonal skills and teamwork capacity\n• Integrity and ethics\n• Ability to handle authority and use force appropriately\n\nTips for the psychological evaluation:\n• Be honest and consistent in your responses\n• Get adequate rest before testing\n• Answer based on your typical behavior, not what you think they want to hear\n• Be prepared to discuss stressful situations and how you've handled them\n• Understand that the goal is to ensure you're psychologically suited for the demands of the job\n\nDo you have specific questions about any part of the psychological evaluation process?"
-            break
-
-          default:
-            response =
-              "I can help you prepare for various aspects of the Deputy Sheriff selection process. What specific area would you like to focus on?"
-        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              "Please sign in to access the practice test materials. This helps us track your progress and award badges for your achievements.",
+          },
+        ])
+        setIsLoading(false)
+        setDisplayedResponse(
+          "Please sign in to access the practice test materials. This helps us track your progress and award badges for your achievements.",
+        )
+        return
       }
 
-      // Add AI response
-      setMessages((prev) => [...prev, { role: "assistant", content: response }])
-      setIsLoading(false)
+      // Enhance the user's message with context about the current test type
+      let enhancedMessage = message
+      switch (activeTab) {
+        case "written":
+          enhancedMessage = `I'm preparing for the Deputy Sheriff written exam. ${message}`
+          break
+        case "oral":
+          enhancedMessage = `I'm preparing for the Deputy Sheriff oral board interview. ${message}`
+          break
+        case "physical":
+          enhancedMessage = `I'm preparing for the Deputy Sheriff physical agility test. ${message}`
+          break
+        case "polygraph":
+          enhancedMessage = `I'm preparing for the Deputy Sheriff polygraph examination. ${message}`
+          break
+        case "psychological":
+          enhancedMessage = `I'm preparing for the Deputy Sheriff psychological evaluation. ${message}`
+          break
+      }
+
+      // Query AI with the enhanced message
+      const aiResponse = await aiService.queryAI(enhancedMessage)
+
+      // Add assistant response
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: aiResponse.text,
+          source: aiResponse.source,
+        },
+      ])
 
       // Reset displayed response for typing effect
       setDisplayedResponse("")
@@ -168,14 +148,31 @@ function PracticeTestsContent() {
       // Simulate typing effect
       let index = 0
       const typingInterval = setInterval(() => {
-        if (index < response.length) {
-          setDisplayedResponse((prev) => prev + response[index])
+        if (index < aiResponse.text.length) {
+          setDisplayedResponse((prev) => prev + aiResponse.text[index])
           index++
         } else {
           clearInterval(typingInterval)
         }
       }, 10)
-    }, 1000)
+    } catch (error) {
+      console.error("Error querying AI:", error)
+
+      // Fallback response in case of error
+      const fallbackResponse =
+        "I apologize, but I'm having trouble accessing that information right now. Please try again in a few moments."
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: fallbackResponse,
+        },
+      ])
+      setDisplayedResponse(fallbackResponse)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const showOptInForm = () => {

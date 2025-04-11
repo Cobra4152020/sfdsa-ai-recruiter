@@ -13,7 +13,8 @@ import { FAQSection } from "@/components/faq-section"
 import { CTASection } from "@/components/cta-section"
 import { ImprovedFooter } from "@/components/improved-footer"
 import MainContent from "@/components/MainContent"
-import { queryOpenAI } from "@/lib/openai-service"
+// Import the entire module instead of just the function
+import * as aiService from "@/lib/ai-services"
 
 type MessageType = {
   role: "assistant" | "user"
@@ -70,8 +71,8 @@ function RecruitmentApp() {
     await incrementParticipation()
 
     try {
-      // Query OpenAI with the user's message
-      const aiResponse = await queryOpenAI(message)
+      // Query AI with the user's message
+      const aiResponse = await aiService.queryAI(message)
 
       // Generate quick replies based on the topic
       const quickReplies = getQuickReplies(message.toLowerCase())
@@ -87,7 +88,7 @@ function RecruitmentApp() {
         },
       ])
     } catch (error) {
-      console.error("Error querying OpenAI:", error)
+      console.error("Error querying AI:", error)
 
       // Fallback response in case of error
       setMessages((prev) => [
