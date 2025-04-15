@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Colorful badge background -->
+  <circle cx="32" cy="32" r="30" fill="#4285F4" stroke="#0D47A1" stroke-width="2"/>
+  
+  <!-- Ribbon decoration -->
+  <path d="M16,48 C16,48 24,44 32,44 C40,44 48,48 48,48 L48,56 C48,56 40,52 32,52 C24,52 16,56 16,56 Z" fill="#0D47A1"/>
+  
+  <!-- Chat interface icon -->
+  <rect x="20" y="14" width="24" height="28" rx="2" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  
+  <!-- Blue header -->
+  <rect x="20" y="14" width="24" height="6" rx="2" fill="#4285F4" stroke="#000000" stroke-width="1.5"/>
+  
+  <!-- Header dots -->
+  <circle cx="25" cy="17" r="1" fill="#FF4081"/>
+  <circle cx="29" cy="17" r="1" fill="#FFEB3B"/>
+  <circle cx="33" cy="17" r="1" fill="#00C853"/>
+  
+  <!-- First user avatar -->
+  <circle cx="24" cy="26" r="4" fill="#4285F4" stroke="#000000" stroke-width="1.5"/>
+  <circle cx="24" cy="25" r="2" fill="#FF4081"/>
+  
+  <!-- Second user avatar -->
+  <circle cx="40" cy="32" r="4" fill="#4285F4" stroke="#000000" stroke-width="1.5"/>
+  <circle cx="40" cy="31" r="2" fill="#00C853"/>
+  
+  <!-- Message bubbles -->
+  <rect x="30" cy="24" width="12" height="8" rx="2" fill="#FFEB3B" stroke="#000000" stroke-width="1.5"/>
+  <rect x="18" cy="34" width="12" height="8" rx="2" fill="#FFEB3B" stroke="#000000" stroke-width="1.5"/>
+  
+  <!-- Message lines -->
+  <line x1="32" y1="26" x2="40" y2="26" stroke="#000000" stroke-width="1"/>
+  <line x1="32" y1="28" x2="38" y2="28" stroke="#000000" stroke-width="1"/>
+  <line x1="20" y1="36" x2="28" y2="36" stroke="#000000" stroke-width="1"/>
+  <line x1="20" y1="38" x2="26" y2="38" stroke="#000000" stroke-width="1"/>
+  
+  <!-- Badge text -->
+  <text x="32" y="40" font-family="Arial" font-size="7" text-anchor="middle" fill="#FFFFFF" font-weight="bold">CHAT</text>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Colorful badge background -->
+  <circle cx="32" cy="32" r="30" fill="#5D8C2A" stroke="#3A5C1A" stroke-width="2"/>
+  
+  <!-- Ribbon decoration -->
+  <path d="M16,48 C16,48 24,44 32,44 C40,44 48,48 48,48 L48,56 C48,56 40,52 32,52 C24,52 16,56 16,56 Z" fill="#3A5C1A"/>
+  
+  <!-- Sergeant Chevron Insignia -->
+  <g transform="translate(20, 14) scale(0.8)">
+    <!-- Bottom Chevron -->
+    <path d="M0,24 L12,12 L24,24 L24,28 L12,16 L0,28 Z" fill="#FFD700" stroke="#000000" stroke-width="1.5"/>
+    <path d="M2,26 L4,24 M6,22 L8,20 M10,18 L14,18 M16,20 L18,22 M20,24 L22,26" stroke="#000000" stroke-width="0.5" stroke-linecap="round"/>
+    
+    <!-- Middle Chevron -->
+    <path d="M0,18 L12,6 L24,18 L24,22 L12,10 L0,22 Z" fill="#FFD700" stroke="#000000" stroke-width="1.5"/>
+    <path d="M2,20 L4,18 M6,16 L8,14 M10,12 L14,12 M16,14 L18,16 M20,18 L22,20" stroke="#000000" stroke-width="0.5" stroke-linecap="round"/>
+    
+    <!-- Top Chevron -->
+    <path d="M0,12 L12,0 L24,12 L24,16 L12,4 L0,16 Z" fill="#FFD700" stroke="#000000" stroke-width="1.5"/>
+    <path d="M2,14 L4,12 M6,10 L8,8 M10,6 L14,6 M16,8 L18,10 M20,12 L22,14" stroke="#000000" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Badge text -->
+  <text x="32" y="40" font-family="Arial" font-size="7" text-anchor="middle" fill="#FFFFFF" font-weight="bold">FIRST RESPONSE</text>
+</svg>
