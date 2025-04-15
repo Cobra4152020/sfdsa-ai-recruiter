@@ -235,7 +235,7 @@ function StandaloneContent() {
                           </td>
                           <td className="py-4 px-4 text-[#0A3C1F]/60 dark:text-white/60">{user.participationCount}</td>
                           <td className="py-4 px-4">
-                            <EarnedBadges badges={user.badges || []} userName={user.name} />
+                            <EarnedBadges badges={user.badges || {}} userName={user.name} />
                           </td>
                         </tr>
                       ))}
@@ -320,7 +320,7 @@ function StandaloneContent() {
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
                           <td className="py-4 px-4">
-                            <EarnedBadges badges={user.badges || []} userName={user.name} />
+                            <EarnedBadges badges={user.badges || {}} userName={user.name} />
                           </td>
                         </tr>
                       ))}
