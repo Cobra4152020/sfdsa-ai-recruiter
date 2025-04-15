@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Colorful badge background -->
+  <circle cx="32" cy="32" r="30" fill="#00BCD4" stroke="#006064" stroke-width="2"/>
+  
+  <!-- Ribbon decoration -->
+  <path d="M16,48 C16,48 24,44 32,44 C40,44 48,48 48,48 L48,56 C48,56 40,52 32,52 C24,52 16,56 16,56 Z" fill="#006064"/>
+  
+  <!-- Badge icon - document with checkmark -->
+  <rect x="22" y="14" width="20" height="24" rx="2" fill="#FFFFFF"/>
+  <path d="M26,20 L38,20 M26,24 L38,24 M26,28 L34,28" stroke="#006064" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M42,18 L32,28 L28,24" stroke="#006064" stroke-width="2" stroke-linecap="round" fill="none"/>
+  
+  <!-- Badge text -->
+  <text x="32" y="40" font-family="Arial" font-size="6" text-anchor="middle" fill="#FFFFFF" font-weight="bold">APPLICATION</text>
+  <text x="32" y="46" font-family="Arial" font-size="6" text-anchor="middle" fill="#FFFFFF" font-weight="bold">COMPLETED</text>
+</svg>

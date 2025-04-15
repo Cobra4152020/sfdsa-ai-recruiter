@@ -28,39 +28,62 @@ export async function GET(request: Request) {
 
     if (type === "applicants") {
       // Get top applicants
-      const { data: applicants, error } = await serviceClient
-        .from("users")
-        .select("*, badges(*)")
-        .eq("hasapplied", true)
-        .order("participationcount", { ascending: false })
-        .limit(limit)
+      try {
+        // First try with badges relationship
+        const { data: applicants, error } = await serviceClient
+          .from("users")
+          .select("*, badges(*)")
+          .eq("hasapplied", true)
+          .order("participationcount", { ascending: false })
+          .limit(limit)
 
-      if (error) {
-        console.error("Error fetching applicants leaderboard:", error)
-        return NextResponse.json(
-          { success: false, message: `Error fetching applicants leaderboard: ${error.message}` },
-          { status: 500 },
-        )
+        if (error) throw error
+        data = applicants
+      } catch (error) {
+        console.error("Error fetching applicants with badges:", error)
+
+        // Fallback: fetch without badges relationship
+        const { data: applicants, error: fallbackError } = await serviceClient
+          .from("users")
+          .select("*")
+          .eq("hasapplied", true)
+          .order("participationcount", { ascending: false })
+          .limit(limit)
+
+        if (fallbackError) {
+          throw fallbackError
+        }
+
+        data = applicants
       }
-
-      data = applicants
     } else {
       // Get top participants
-      const { data: participants, error } = await serviceClient
-        .from("users")
-        .select("*, badges(*)")
-        .order("participationcount", { ascending: false })
-        .limit(limit)
+      try {
+        // First try with badges relationship
+        const { data: participants, error } = await serviceClient
+          .from("users")
+          .select("*, badges(*)")
+          .order("participationcount", { ascending: false })
+          .limit(limit)
 
-      if (error) {
-        console.error("Error fetching participation leaderboard:", error)
-        return NextResponse.json(
-          { success: false, message: `Error fetching participation leaderboard: ${error.message}` },
-          { status: 500 },
-        )
+        if (error) throw error
+        data = participants
+      } catch (error) {
+        console.error("Error fetching participants with badges:", error)
+
+        // Fallback: fetch without badges relationship
+        const { data: participants, error: fallbackError } = await serviceClient
+          .from("users")
+          .select("*")
+          .order("participationcount", { ascending: false })
+          .limit(limit)
+
+        if (fallbackError) {
+          throw fallbackError
+        }
+
+        data = participants
       }
-
-      data = participants
     }
 
     // Convert database column names to camelCase for client and process badges
@@ -111,14 +134,14 @@ export async function GET(request: Request) {
 
       return {
         id: user.id,
-        name: user.name,
+        name: user.name || "Anonymous User",
         email: user.email,
         phone: user.phone,
-        participationCount: user.participationcount,
-        hasApplied: user.hasapplied,
-        referralCount: user.referralcount,
-        createdAt: user.createdat,
-        updatedAt: user.updatedat,
+        participationCount: user.participationcount || 0,
+        hasApplied: user.hasapplied || false,
+        referralCount: user.referralcount || 0,
+        createdAt: user.createdat || new Date().toISOString(),
+        updatedAt: user.updatedat || new Date().toISOString(),
         badges: badges,
       }
     })

@@ -1,5 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 type BadgeType =
   | "written"
@@ -23,6 +26,8 @@ interface AchievementBadgeProps {
 }
 
 export function AchievementBadge({ type, size = "md", earned = true, className }: AchievementBadgeProps) {
+  const [imageError, setImageError] = useState(false)
+
   const badges = {
     written: "/images/badges/written-badge.svg",
     oral: "/images/badges/oral-badge.svg",
@@ -46,18 +51,38 @@ export function AchievementBadge({ type, size = "md", earned = true, className }
 
   const badgeSize = sizes[size]
 
+  // Format badge name for display
+  const getBadgeDisplayName = (badgeType: string) => {
+    return badgeType
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  }
+
+  // If image fails to load, show a fallback
+  const handleImageError = () => {
+    setImageError(true)
+  }
+
   return (
     <div className={cn("relative inline-block", !earned && "opacity-40 grayscale", className)}>
-      <Image
-        src={badges[type] || "/placeholder.svg"}
-        width={badgeSize}
-        height={badgeSize}
-        alt={`${type
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ")} Badge`}
-        className="drop-shadow-md"
-      />
+      {imageError ? (
+        <div
+          className="flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-full"
+          style={{ width: badgeSize, height: badgeSize }}
+        >
+          <span className="text-xs text-center px-1">{getBadgeDisplayName(type)}</span>
+        </div>
+      ) : (
+        <Image
+          src={badges[type] || "/placeholder.svg"}
+          width={badgeSize}
+          height={badgeSize}
+          alt={`${getBadgeDisplayName(type)} Badge`}
+          className="drop-shadow-md"
+          onError={handleImageError}
+        />
+      )}
       {!earned && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-black/30 rounded-full w-full h-full flex items-center justify-center">

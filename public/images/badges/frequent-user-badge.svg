@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Colorful badge background -->
+  <circle cx="32" cy="32" r="30" fill="#673AB7" stroke="#311B92" stroke-width="2"/>
+  
+  <!-- Ribbon decoration -->
+  <path d="M16,48 C16,48 24,44 32,44 C40,44 48,48 48,48 L48,56 C48,56 40,52 32,52 C24,52 16,56 16,56 Z" fill="#311B92"/>
+  
+  <!-- Badge icon - star with clock -->
+  <path d="M32,14 L35,23 L44,23 L37,29 L40,38 L32,32 L24,38 L27,29 L20,23 L29,23 Z" fill="#FFFFFF"/>
+  <circle cx="32" cy="26" r="6" fill="#673AB7" stroke="#FFFFFF" stroke-width="1.5"/>
+  <path d="M32,22 L32,26 L35,29" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Badge text -->
+  <text x="32" y="40" font-family="Arial" font-size="6" text-anchor="middle" fill="#FFFFFF" font-weight="bold">FREQUENT</text>
+  <text x="32" y="46" font-family="Arial" font-size="6" text-anchor="middle" fill="#FFFFFF" font-weight="bold">USER</text>
+</svg>
