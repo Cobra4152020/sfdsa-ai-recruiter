@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback, memo } from "react"
 import { Send, Info } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useUser } from "@/context/user-context"
@@ -9,6 +9,7 @@ interface Message {
   role: "user" | "assistant"
   content: string | React.ReactNode
   source?: string
+  id?: string // Add unique ID for better list rendering
 }
 
 interface MainContentProps {
@@ -19,6 +20,75 @@ interface MainContentProps {
   showOptInForm?: () => void
 }
 
+// Memoized message component for better performance
+const ChatMessage = memo(
+  ({
+    message,
+    isLatest,
+    displayedResponse,
+    renderTextWithLinks,
+  }: {
+    message: Message
+    isLatest: boolean
+    displayedResponse?: string
+    renderTextWithLinks: (text: string) => React.ReactNode
+  }) => {
+    const isUser = message.role === "user"
+
+    return (
+      <div className={`max-w-3xl mx-auto ${isUser ? "ml-auto" : ""}`}>
+        <div
+          className={`rounded-lg p-3 ${
+            isUser ? "user-message ml-12 sm:ml-24 shadow-md" : "assistant-message shadow-md"
+          }`}
+        >
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {isLatest && typeof message.content === "string"
+              ? renderTextWithLinks(displayedResponse || "")
+              : typeof message.content === "string"
+                ? renderTextWithLinks(message.content)
+                : message.content}
+          </div>
+
+          {/* Source citation for AI responses */}
+          {message.role === "assistant" && message.source && (
+            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center text-xs text-gray-500 dark:text-gray-400">
+              <Info className="h-3 w-3 mr-1" />
+              <span>Source: {message.source}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  },
+)
+
+ChatMessage.displayName = "ChatMessage"
+
+// Loading indicator component
+const LoadingIndicator = memo(() => (
+  <div className="max-w-3xl mx-auto">
+    <div className="assistant-message rounded-lg p-3 shadow-md">
+      <div className="flex space-x-2">
+        <div
+          className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
+          style={{ animationDelay: "0ms" }}
+        ></div>
+        <div
+          className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
+          style={{ animationDelay: "150ms" }}
+        ></div>
+        <div
+          className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
+          style={{ animationDelay: "300ms" }}
+        ></div>
+      </div>
+    </div>
+  </div>
+))
+
+LoadingIndicator.displayName = "LoadingIndicator"
+
 const MainContent: React.FC<MainContentProps> = ({
   messages,
   onSendMessage,
@@ -28,54 +98,82 @@ const MainContent: React.FC<MainContentProps> = ({
 }) => {
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { isLoggedIn, incrementParticipation } = useUser()
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
+  // Memoize the scroll function to prevent unnecessary re-renders
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current && shouldAutoScroll) {
       const chatContainer = messagesEndRef.current.parentElement
       if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight
       }
     }
-  }
+  }, [shouldAutoScroll])
 
+  // Detect when user manually scrolls up to disable auto-scroll
   useEffect(() => {
-    // Only auto-scroll when a new message is added or when loading state changes
+    const chatContainer = chatContainerRef.current
+    if (!chatContainer) return
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainer
+      // If user scrolls up more than 100px from bottom, disable auto-scroll
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100
+      setShouldAutoScroll(isNearBottom)
+    }
+
+    chatContainer.addEventListener("scroll", handleScroll)
+    return () => chatContainer.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  // Auto-scroll when messages change or loading state changes
+  useEffect(() => {
     if (messages.length > 0 || isLoading) {
-      // Add a small delay to ensure the DOM has updated
-      setTimeout(() => {
+      // Use requestAnimationFrame for smoother scrolling
+      requestAnimationFrame(() => {
         scrollToBottom()
-      }, 100)
+      })
     }
-  }, [messages.length, isLoading])
+  }, [messages.length, isLoading, scrollToBottom])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
+  // Memoize the submit handler to prevent unnecessary re-renders
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!input.trim()) return
 
-    // Check if user is logged in
-    if (!isLoggedIn && showOptInForm) {
-      showOptInForm()
-      return
-    }
+      // Check if user is logged in
+      if (!isLoggedIn && showOptInForm) {
+        showOptInForm()
+        return
+      }
 
-    // Track participation
-    await incrementParticipation()
+      try {
+        // Track participation
+        await incrementParticipation()
 
-    // Get user's question
-    const userQuestion = input.trim()
-    setInput("")
+        // Get user's question
+        const userQuestion = input.trim()
+        setInput("")
 
-    // Add user message to the chat
-    const userMessage: Message = { role: "user", content: userQuestion }
-    const updatedMessages = [...messages, userMessage]
+        // Enable auto-scroll when user sends a message
+        setShouldAutoScroll(true)
 
-    // Show loading state
-    onSendMessage(userQuestion)
-  }
+        // Send the message
+        onSendMessage(userQuestion)
+      } catch (error) {
+        console.error("Error submitting message:", error)
+        // Handle error (could show a toast notification here)
+      }
+    },
+    [input, isLoggedIn, showOptInForm, incrementParticipation, onSendMessage],
+  )
 
-  const renderTextWithLinks = (text: string): React.ReactNode => {
+  // Memoize the text rendering function
+  const renderTextWithLinks = useCallback((text: string): React.ReactNode => {
     // Split by newlines first to preserve paragraphs
     const paragraphs = text.split(/\n\n+/)
 
@@ -111,63 +209,29 @@ const MainContent: React.FC<MainContentProps> = ({
         })}
       </>
     )
-  }
+  }, [])
 
   return (
     <div className="flex flex-col h-full">
       {/* Chat Area - make it more compact and auto-adjust */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Use proper keys for list rendering */}
         {messages.map((message, index) => {
           const isLatestAssistantMessage =
             message.role === "assistant" && index === messages.length - 1 && typeof message.content === "string"
 
           return (
-            <div key={index} className={`max-w-3xl mx-auto ${message.role === "user" ? "ml-auto" : ""}`}>
-              <div
-                className={`rounded-lg p-3 ${
-                  message.role === "user" ? "user-message ml-12 sm:ml-24 shadow-md" : "assistant-message shadow-md"
-                }`}
-              >
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  {isLatestAssistantMessage
-                    ? renderTextWithLinks(displayedResponse)
-                    : typeof message.content === "string"
-                      ? renderTextWithLinks(message.content)
-                      : message.content}
-                </div>
-
-                {/* Source citation for AI responses */}
-                {message.role === "assistant" && message.source && (
-                  <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                    <Info className="h-3 w-3 mr-1" />
-                    <span>Source: {message.source}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <ChatMessage
+              key={message.id || `message-${index}`}
+              message={message}
+              isLatest={isLatestAssistantMessage}
+              displayedResponse={displayedResponse}
+              renderTextWithLinks={renderTextWithLinks}
+            />
           )
         })}
 
-        {isLoading && (
-          <div className="max-w-3xl mx-auto">
-            <div className="assistant-message rounded-lg p-3 shadow-md">
-              <div className="flex space-x-2">
-                <div
-                  className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
-                  style={{ animationDelay: "0ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
-                  style={{ animationDelay: "150ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
-                  style={{ animationDelay: "300ms" }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        )}
+        {isLoading && <LoadingIndicator />}
 
         <div ref={messagesEndRef} />
       </div>
@@ -203,4 +267,4 @@ const MainContent: React.FC<MainContentProps> = ({
   )
 }
 
-export default MainContent
+export default React.memo(MainContent)
