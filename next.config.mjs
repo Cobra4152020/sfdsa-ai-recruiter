@@ -1,16 +1,3 @@
-let userConfig = undefined
-try {
-  // try to import ESM first
-  userConfig = await import('./v0-user-next.config.mjs')
-} catch (e) {
-  try {
-    // fallback to CJS import
-    userConfig = await import("./v0-user-next.config");
-  } catch (innerError) {
-    // ignore error
-  }
-}
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -24,19 +11,18 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    // Disable problematic experimental features
+    // Only include valid experimental features for Next.js 13.4.19
     webpackBuildWorker: false,
-    parallelServerBuildTraces: false,
-    parallelServerCompiles: false,
-    
-    // Enable server actions as required by your code
     serverActions: true,
   },
   excludeDefaultMomentLocales: true,
   
-  // Use the simplest possible webpack configuration
+  // Handle the font loading issue
+  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://fonts.googleapis.com' : '',
+  
+  // Simplified webpack config
   webpack: (config) => {
-    // Force an older hash function that doesn't use WebAssembly
+    // Use a reliable hash function
     config.output = {
       ...config.output,
       hashFunction: 'md4',
@@ -44,25 +30,6 @@ const nextConfig = {
     
     return config;
   },
-}
-
-if (userConfig) {
-  // ESM imports will have a "default" property
-  const config = userConfig.default || userConfig
-
-  for (const key in config) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
-      nextConfig[key] = {
-        ...nextConfig[key],
-        ...config[key],
-      }
-    } else {
-      nextConfig[key] = config[key]
-    }
-  }
 }
 
 export default nextConfig
