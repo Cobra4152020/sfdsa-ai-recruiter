@@ -24,52 +24,26 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    // Disable all experimental features
+    // Disable problematic experimental features
     webpackBuildWorker: false,
     parallelServerBuildTraces: false,
     parallelServerCompiles: false,
+    
+    // Enable server actions as required by your code
+    serverActions: true,
   },
   excludeDefaultMomentLocales: true,
   
-  // More aggressive webpack configuration to fix the WebAssembly issue
-  webpack: (config, { isServer }) => {
-    // Completely disable WebAssembly
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: false,
-      syncWebAssembly: false,
-    };
-    
-    // Explicitly set hash function to non-WebAssembly implementation
+  // Use the simplest possible webpack configuration
+  webpack: (config) => {
+    // Force an older hash function that doesn't use WebAssembly
     config.output = {
       ...config.output,
-      hashFunction: 'xxhash64'  // Try an alternative hash function
+      hashFunction: 'md4',
     };
-    
-    // Disable any potential WebAssembly modules
-    config.module = {
-      ...config.module,
-      rules: [
-        ...config.module.rules,
-        {
-          test: /\.wasm$/,
-          type: 'javascript/auto',
-        }
-      ]
-    };
-    
-    // Add node config to avoid symlinks if on server
-    if (isServer) {
-      config.node = {
-        ...config.node,
-        __filename: true,
-        __dirname: true,
-      };
-    }
     
     return config;
   },
-  // Removed the 'standalone' output option to avoid symlink errors
 }
 
 if (userConfig) {
