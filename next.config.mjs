@@ -1,17 +1,16 @@
-let userConfig = undefined
+/** @type {import('next').NextConfig} */
+let userConfig = undefined;
+
 try {
-  // try to import ESM first
-  userConfig = await import('./v0-user-next.config.mjs')
+  userConfig = await import('./v0-user-next.config.mjs');
 } catch (e) {
   try {
-    // fallback to CJS import
-    userConfig = await import("./v0-user-next.config");
-  } catch (innerError) {
-    // ignore error
+    userConfig = await import('./v0-user-next.config');
+  } catch (_) {
+    // ignore if not found
   }
 }
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
@@ -22,59 +21,26 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['fonts.googleapis.com', 'fonts.gstatic.com'],
   },
   experimental: {
-    // Disable problematic experimental features but enable server actions
-    webpackBuildWorker: false,
-    serverActions: true,
+    serverActions: {},
   },
-  excludeDefaultMomentLocales: true,
-  
-  // Simplified webpack configuration for compatibility with Next.js 13.4.19
-  webpack: (config, { isServer }) => {
-    // Completely disable WebAssembly
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: false,
-      syncWebAssembly: false,
-    };
-    
-    // Use md4 hash function which is known to work well with Next.js 13.4.19
-    config.output = {
-      ...config.output,
-      hashFunction: 'md4',
-    };
-    
-    // Add node config to avoid symlinks if on server
-    if (isServer) {
-      config.node = {
-        ...config.node,
-        __filename: true,
-        __dirname: true,
-      };
-    }
-    
-    return config;
-  },
-}
+  // Removed: excludeDefaultMomentLocales
+};
 
 if (userConfig) {
-  // ESM imports will have a "default" property
-  const config = userConfig.default || userConfig
-
+  const config = userConfig.default || userConfig;
   for (const key in config) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
+    if (typeof nextConfig[key] === 'object' && !Array.isArray(nextConfig[key])) {
       nextConfig[key] = {
         ...nextConfig[key],
         ...config[key],
-      }
+      };
     } else {
-      nextConfig[key] = config[key]
+      nextConfig[key] = config[key];
     }
   }
 }
 
-export default nextConfig
+export default nextConfig;
