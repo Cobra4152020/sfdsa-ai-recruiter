@@ -3,8 +3,6 @@
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { knowledgeBase } from "./knowledge-base"
-import fs from "fs"
-import path from "path"
 import { listAvailablePDFs } from "./pdf-service"
 
 // Function to check if question is within scope
@@ -98,24 +96,35 @@ async function findRelevantPDF(question: string): Promise<string | null> {
 // Function to query OpenAI with a PDF file
 async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
   try {
-    const documentsDir = path.join(process.cwd(), "public", "documents")
-    const filePath = path.join(documentsDir, pdfFilename)
+    // In a serverless environment, we need to use the public URL of the PDF
+    // rather than reading from the filesystem directly
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      console.error(`PDF file not found: ${filePath}`)
-      return null
+    const pdfUrl = `${baseUrl}/documents/${encodeURIComponent(pdfFilename)}`
+
+    console.log(`Using PDF URL: ${pdfUrl}`)
+
+    // Fetch the PDF file
+    const response = await fetch(pdfUrl)
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`)
     }
 
-    console.log(`Reading PDF file: ${filePath}`)
+    const pdfBuffer = await response.arrayBuffer()
+    const pdfData = Buffer.from(pdfBuffer)
 
-    // Read the PDF file
-    const pdfData = fs.readFileSync(filePath)
+    console.log(`Successfully fetched PDF (${pdfData.byteLength} bytes)`)
 
-    console.log(`Successfully read PDF file (${pdfData.length} bytes)`)
+    // Add timeout handling for OpenAI calls
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("OpenAI request timed out")), 30000) // 30 second timeout
+    })
 
     // Generate response using OpenAI with the PDF file
-    const { text } = await generateText({
+    const aiResponsePromise = generateText({
       model: openai("gpt-4o"),
       messages: [
         {
@@ -140,6 +149,9 @@ async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
       ],
     })
 
+    // Race the AI response against the timeout
+    const { text } = (await Promise.race([aiResponsePromise, timeoutPromise])) as { text: string }
+
     console.log("Successfully generated response from OpenAI with PDF")
 
     return {
@@ -149,6 +161,14 @@ async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
     }
   } catch (error) {
     console.error("Error querying OpenAI with PDF:", error)
+    // Return a more specific error message based on the error type
+    if (error.message?.includes("timed out")) {
+      return {
+        text: "I'm sorry, but it's taking longer than expected to process your question. Please try again in a moment or contact our recruitment team directly at (415) 554-7225.",
+        source: "Error",
+        confidence: 0.5,
+      }
+    }
     return null
   }
 }
@@ -239,6 +259,20 @@ export async function queryAI(question: string) {
     }
   } catch (error) {
     console.error("Error querying AI:", error)
+
+    // Provide more specific error messages based on error type
+    if (error.message?.includes("rate limit")) {
+      return {
+        text: "I'm currently handling many requests. Please try again in a moment or contact our recruitment team directly at (415) 554-7225.",
+        confidence: 0.5,
+      }
+    } else if (error.message?.includes("timed out")) {
+      return {
+        text: "I'm sorry, but it's taking longer than expected to process your question. Please try again in a moment or contact our recruitment team directly at (415) 554-7225.",
+        confidence: 0.5,
+      }
+    }
+
     return {
       text: "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
       confidence: 0.5,

@@ -27,6 +27,20 @@ export async function listAvailablePDFs(): Promise<string[]> {
   try {
     const documentsDir = getDocumentsDir()
 
+    // In production on Vercel, we'll use a predefined list of PDFs
+    // since we can't read the directory dynamically in serverless
+    if (process.env.NODE_ENV === "production") {
+      // These should match the actual PDF files in the public/documents directory
+      return [
+        "cba-2023.pdf",
+        "employee-handbook.pdf",
+        "health-benefits-guide.pdf",
+        "sfers-guide.pdf",
+        "test-document.pdf",
+      ]
+    }
+
+    // For development, we can read the directory
     // Check if directory exists
     if (!fs.existsSync(documentsDir)) {
       console.warn(`Documents directory not found: ${documentsDir}`)
@@ -40,7 +54,14 @@ export async function listAvailablePDFs(): Promise<string[]> {
     return files
   } catch (error) {
     console.error(`Error listing PDFs: ${error}`)
-    return []
+    // Fallback to hardcoded list in case of error
+    return [
+      "cba-2023.pdf",
+      "employee-handbook.pdf",
+      "health-benefits-guide.pdf",
+      "sfers-guide.pdf",
+      "test-document.pdf",
+    ]
   }
 }
 
