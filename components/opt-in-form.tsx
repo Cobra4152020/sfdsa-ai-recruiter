@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { trapFocus } from "@/lib/accessibility"
 
 interface OptInFormProps {
   isOpen: boolean
@@ -70,6 +71,17 @@ export function OptInForm({
       })
     }
   }, [isLoggedIn, isApplying, hasRedirected, markAsApplied, onClose, isRedirecting, isAwardsPage])
+
+  // Trap focus within the dialog when open
+  useEffect(() => {
+    if (isOpen) {
+      const dialogElement = document.querySelector('[role="dialog"]') as HTMLElement
+      if (dialogElement) {
+        const cleanup = trapFocus(dialogElement)
+        return cleanup
+      }
+    }
+  }, [isOpen])
 
   // Don't show the form if the user is already logged in and it's not required or applying
   if (isLoggedIn && !required && !isApplying) {
@@ -142,12 +154,16 @@ export function OptInForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={required ? undefined : onClose}>
-      <DialogContent className="sm:max-w-[425px] rounded-2xl border-border/40 bg-card/80 backdrop-blur-sm shadow-lg">
+      <DialogContent
+        className="sm:max-w-[425px] rounded-2xl border-border/40 bg-card/80 backdrop-blur-sm shadow-lg"
+        aria-labelledby="form-title"
+        aria-describedby="form-description"
+      >
         <DialogHeader>
-          <DialogTitle className="text-xl">
+          <DialogTitle id="form-title" className="text-xl">
             {isApplying ? "Start Your Application" : "Join Our Recruitment Program"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription id="form-description">
             {isApplying
               ? "Please enter your information to begin the application process for Deputy Sheriff."
               : required
@@ -157,18 +173,19 @@ export function OptInForm({
         </DialogHeader>
 
         {showSuccess ? (
-          <div className="py-6 text-center">
+          <div className="py-6 text-center" aria-live="polite">
             <div className="text-[#0A3C1F] dark:text-[#FFD700] text-xl font-bold mb-2">
               {isApplying ? "Thank you for applying!" : "Thank you for signing up!"}
             </div>
             <p className="text-[#0A3C1F]/70 dark:text-white/70">{successMessage}</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  Full Name *
+                  Full Name <span aria-hidden="true">*</span>
+                  <span className="sr-only">required</span>
                 </Label>
                 <Input
                   id="name"
@@ -176,13 +193,16 @@ export function OptInForm({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
                   required
+                  aria-required="true"
                   className="rounded-xl h-11"
+                  aria-invalid={error && !name ? "true" : "false"}
                 />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  Email *
+                  Email <span aria-hidden="true">*</span>
+                  <span className="sr-only">required</span>
                 </Label>
                 <Input
                   id="email"
@@ -191,7 +211,9 @@ export function OptInForm({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="john.doe@example.com"
                   required
+                  aria-required="true"
                   className="rounded-xl h-11"
+                  aria-invalid={error && !email ? "true" : "false"}
                 />
               </div>
 
@@ -209,7 +231,11 @@ export function OptInForm({
                 />
               </div>
 
-              {error && <div className="text-destructive text-sm">{error}</div>}
+              {error && (
+                <div className="text-destructive text-sm" role="alert" aria-live="assertive">
+                  {error}
+                </div>
+              )}
             </div>
 
             <DialogFooter>
@@ -222,6 +248,7 @@ export function OptInForm({
                 type="submit"
                 className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold rounded-xl"
                 disabled={isSubmitting}
+                aria-busy={isSubmitting}
               >
                 {isSubmitting ? "Saving..." : isApplying ? "Continue to Application" : "Save & Continue"}
               </Button>

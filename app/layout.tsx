@@ -1,27 +1,27 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/context/auth-context"
+import { UserProvider } from "@/context/user-context"
+import { SkipToContent } from "@/components/skip-to-content"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SF Deputy Sheriff AI Recruiter",
-  description: "Learn about becoming a San Francisco Deputy Sheriff",
+  title: "SF Deputy Sheriff Recruitment",
+  description: "Join the San Francisco Deputy Sheriff's Department",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>{children}</AuthProvider>
+          <UserProvider>
+            <SkipToContent />
+            <main id="main-content">{children}</main>
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

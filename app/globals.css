@@ -2,99 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-  }
+:root {
+  --foreground-rgb: 10, 60, 31; /* Dark green */
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 245, 245, 245;
+  --primary: 10, 60, 31; /* Dark green */
+  --primary-foreground: 255, 255, 255;
+  --secondary: 255, 215, 0; /* Gold */
+  --secondary-foreground: 10, 60, 31;
+  --accent: 209, 194, 143; /* Light gold */
+  --accent-foreground: 10, 60, 31;
+  --destructive: 220, 38, 38; /* Red */
+  --destructive-foreground: 255, 255, 255;
+  --muted: 245, 245, 245;
+  --muted-foreground: 115, 115, 115;
+  --border: 209, 194, 143; /* Light gold */
+  --input: 209, 194, 143; /* Light gold */
+  --ring: 10, 60, 31; /* Dark green */
+}
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 10, 10, 10;
+  --primary: 255, 215, 0; /* Gold */
+  --primary-foreground: 0, 0, 0;
+  --secondary: 10, 60, 31; /* Dark green */
+  --secondary-foreground: 255, 255, 255;
+  --accent: 68, 68, 68;
+  --accent-foreground: 255, 215, 0; /* Gold */
+  --destructive: 239, 68, 68; /* Brighter red for dark mode */
+  --destructive-foreground: 255, 255, 255;
+  --muted: 30, 30, 30;
+  --muted-foreground: 170, 170, 170;
+  --border: 68, 68, 68;
+  --input: 68, 68, 68;
+  --ring: 255, 215, 0; /* Gold */
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground;
-  }
-
-  /* Add padding to all main content areas to account for fixed header */
-  main {
-    @apply pt-24; /* Reduced padding for all main elements */
+    @apply bg-gradient-to-b from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))];
+    color: rgb(var(--foreground-rgb));
   }
 }
 
-/* Custom styles */
 @layer components {
+  .sheriff-button {
+    @apply bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 text-white dark:bg-[#FFD700] dark:hover:bg-[#FFD700]/90 dark:text-black;
+  }
+
   .user-message {
-    @apply bg-[#0A3C1F] text-white dark:bg-[#0A3C1F] dark:text-white;
+    @apply bg-[#0A3C1F] text-white dark:bg-[#333333] dark:text-white;
   }
 
   .assistant-message {
     @apply bg-white text-[#0A3C1F] dark:bg-[#1E1E1E] dark:text-white;
   }
 
-  .sheriff-button {
-    @apply bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold;
+  /* Improved focus styles for better accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#FFD700] dark:outline-[#0A3C1F];
   }
 
-  .image-carousel-container img {
-    max-width: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+  /* Skip to content link */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 
-  /* Ticker animation styles */
-  @keyframes ticker {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-
-  .ticker-animation {
-    animation: ticker 15s linear infinite;
+  .sr-only:focus-visible {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 }

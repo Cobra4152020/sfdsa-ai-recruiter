@@ -64,27 +64,34 @@ export function AchievementBadge({ type, size = "md", earned = true, className }
     setImageError(true)
   }
 
+  const badgeName = getBadgeDisplayName(type)
+
   return (
-    <div className={cn("relative inline-block", !earned && "opacity-40 grayscale", className)}>
+    <div
+      className={cn("relative inline-block", !earned && "opacity-40 grayscale", className)}
+      role="img"
+      aria-label={`${badgeName} Badge ${earned ? "Earned" : "Not Earned"}`}
+    >
       {imageError ? (
         <div
           className="flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-full"
           style={{ width: badgeSize, height: badgeSize }}
         >
-          <span className="text-xs text-center px-1">{getBadgeDisplayName(type)}</span>
+          <span className="text-xs text-center px-1">{badgeName}</span>
         </div>
       ) : (
         <Image
           src={badges[type] || "/placeholder.svg"}
           width={badgeSize}
           height={badgeSize}
-          alt={`${getBadgeDisplayName(type)} Badge`}
+          alt=""
           className="drop-shadow-md"
           onError={handleImageError}
+          aria-hidden="true"
         />
       )}
       {!earned && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
           <div className="bg-black/30 rounded-full w-full h-full flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"

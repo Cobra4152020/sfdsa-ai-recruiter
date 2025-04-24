@@ -50,6 +50,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
           ? "bg-[#0A3C1F]/95 dark:bg-black/95 backdrop-blur-md py-2 shadow-lg"
           : "bg-[#0A3C1F]/80 dark:bg-black/80 backdrop-blur-sm py-2"
       }`}
+      role="banner"
     >
       <div className="container mx-auto px-4">
         {/* Top row with logo and theme toggle */}
@@ -62,8 +63,9 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               goToPage("/")
             }}
             className="flex items-center"
+            aria-label="SF Deputy Sheriff AI Recruitment - Home"
           >
-            <Shield className="h-8 w-8 text-[#FFD700] mr-2" />
+            <Shield className="h-8 w-8 text-[#FFD700] mr-2" aria-hidden="true" />
             <div>
               <span className="font-bold text-white text-lg">SF Deputy Sheriff</span>
               <span className="text-[#FFD700] text-xs block -mt-1">AI Recruitment</span>
@@ -77,7 +79,11 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Moon className="h-5 w-5" aria-hidden="true" />
+              )}
             </button>
 
             {/* Mobile menu button */}
@@ -86,8 +92,14 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 onClick={toggleMenu}
                 className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
               >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isMenuOpen ? (
+                  <X className="h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Menu className="h-6 w-6" aria-hidden="true" />
+                )}
               </button>
             </div>
           </div>
@@ -96,7 +108,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
         {/* Bottom row with navigation and buttons */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between py-2">
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6" aria-label="Main Navigation">
             {!isHomePage && (
               <a
                 href="/"
@@ -106,7 +118,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 }}
                 className="text-white hover:text-[#FFD700] transition-colors flex items-center"
               >
-                <Home className="h-4 w-4 mr-1" /> Home
+                <Home className="h-4 w-4 mr-1" aria-hidden="true" /> Home
               </a>
             )}
             <a
@@ -127,7 +139,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               }}
               className="text-white hover:text-[#FFD700] transition-colors flex items-center"
             >
-              <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
+              <BookOpen className="h-4 w-4 mr-1" aria-hidden="true" /> Practice Tests
             </a>
             <a
               href="/gi-bill"
@@ -164,7 +176,11 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               </Button>
             )}
 
-            <Button onClick={showOptInForm} className="bg-white hover:bg-white/90 text-[#0A3C1F] font-medium">
+            <Button
+              onClick={showOptInForm}
+              className="bg-white hover:bg-white/90 text-[#0A3C1F] font-medium"
+              aria-label="Apply now for Deputy Sheriff position"
+            >
               Apply Now
             </Button>
           </div>
@@ -175,11 +191,13 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-menu"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             className="md:hidden bg-[#0A3C1F] dark:bg-black border-t border-white/10"
+            aria-label="Mobile Navigation"
           >
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-4">
@@ -193,7 +211,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                     }}
                     className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                   >
-                    <Home className="h-4 w-4 mr-2" /> Home
+                    <Home className="h-4 w-4 mr-2" aria-hidden="true" /> Home
                   </a>
                 )}
                 <a
@@ -216,7 +234,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors flex items-center"
                 >
-                  <BookOpen className="h-4 w-4 mr-2" /> Practice Tests
+                  <BookOpen className="h-4 w-4 mr-2" aria-hidden="true" /> Practice Tests
                 </a>
                 <a
                   href="/gi-bill"
@@ -258,6 +276,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   <Button
                     onClick={showOptInForm}
                     className="bg-white hover:bg-white/90 text-[#0A3C1F] font-medium w-full"
+                    aria-label="Apply now for Deputy Sheriff position"
                   >
                     Apply Now
                   </Button>

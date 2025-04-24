@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, memo } from "react"
 import { Send, Info } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useUser } from "@/context/user-context"
+import { announceToScreenReader } from "@/lib/accessibility"
 
 interface Message {
   role: "user" | "assistant"
@@ -34,26 +35,31 @@ const ChatMessage = memo(
     renderTextWithLinks: (text: string) => React.ReactNode
   }) => {
     const isUser = message.role === "user"
+    const messageContent =
+      isLatest && typeof message.content === "string"
+        ? displayedResponse || ""
+        : typeof message.content === "string"
+          ? message.content
+          : message.content
 
     return (
-      <div className={`max-w-3xl mx-auto ${isUser ? "ml-auto" : ""}`}>
+      <div className={`max-w-3xl mx-auto ${isUser ? "ml-auto" : ""}`} role="listitem">
         <div
           className={`rounded-lg p-3 ${
             isUser ? "user-message ml-12 sm:ml-24 shadow-md" : "assistant-message shadow-md"
           }`}
         >
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            {isLatest && typeof message.content === "string"
-              ? renderTextWithLinks(displayedResponse || "")
-              : typeof message.content === "string"
-                ? renderTextWithLinks(message.content)
-                : message.content}
+          <div
+            className="prose prose-sm dark:prose-invert max-w-none"
+            aria-live={isLatest && !isUser ? "polite" : "off"}
+          >
+            {typeof messageContent === "string" ? renderTextWithLinks(messageContent) : messageContent}
           </div>
 
           {/* Source citation for AI responses */}
           {message.role === "assistant" && message.source && (
             <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center text-xs text-gray-500 dark:text-gray-400">
-              <Info className="h-3 w-3 mr-1" />
+              <Info className="h-3 w-3 mr-1" aria-hidden="true" />
               <span>Source: {message.source}</span>
             </div>
           )}
@@ -67,20 +73,24 @@ ChatMessage.displayName = "ChatMessage"
 
 // Loading indicator component
 const LoadingIndicator = memo(() => (
-  <div className="max-w-3xl mx-auto">
+  <div className="max-w-3xl mx-auto" aria-live="polite">
     <div className="assistant-message rounded-lg p-3 shadow-md">
       <div className="flex space-x-2">
+        <span className="sr-only">Message is being generated...</span>
         <div
           className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
           style={{ animationDelay: "0ms" }}
+          aria-hidden="true"
         ></div>
         <div
           className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
           style={{ animationDelay: "150ms" }}
+          aria-hidden="true"
         ></div>
         <div
           className="w-2 h-2 rounded-full bg-[#0A3C1F] dark:bg-[#FFD700] animate-bounce opacity-75"
           style={{ animationDelay: "300ms" }}
+          aria-hidden="true"
         ></div>
       </div>
     </div>
@@ -99,9 +109,23 @@ const MainContent: React.FC<MainContentProps> = ({
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const { theme } = useTheme()
   const { isLoggedIn, incrementParticipation } = useUser()
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+
+  // Announce new messages to screen readers
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage.role === "assistant" && typeof lastMessage.content === "string") {
+        // Only announce completed messages, not streaming ones
+        if (!isLoading && displayedResponse === lastMessage.content) {
+          announceToScreenReader("New message received", "polite")
+        }
+      }
+    }
+  }, [messages, isLoading, displayedResponse])
 
   // Memoize the scroll function to prevent unnecessary re-renders
   const scrollToBottom = useCallback(() => {
@@ -139,6 +163,22 @@ const MainContent: React.FC<MainContentProps> = ({
     }
   }, [messages.length, isLoading, scrollToBottom])
 
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt+S focuses the send message input
+      if (e.altKey && e.key === "s") {
+        e.preventDefault()
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
   // Memoize the submit handler to prevent unnecessary re-renders
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -162,11 +202,14 @@ const MainContent: React.FC<MainContentProps> = ({
         // Enable auto-scroll when user sends a message
         setShouldAutoScroll(true)
 
+        // Announce to screen readers
+        announceToScreenReader("Sending message", "polite")
+
         // Send the message
         onSendMessage(userQuestion)
       } catch (error) {
         console.error("Error submitting message:", error)
-        // Handle error (could show a toast notification here)
+        announceToScreenReader("Error sending message. Please try again.", "assertive")
       }
     },
     [input, isLoggedIn, showOptInForm, incrementParticipation, onSendMessage],
@@ -212,9 +255,14 @@ const MainContent: React.FC<MainContentProps> = ({
   }, [])
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="region" aria-label="Chat with Sgt. Ken">
       {/* Chat Area - make it more compact and auto-adjust */}
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-3 space-y-3"
+        role="list"
+        aria-label="Conversation messages"
+      >
         {/* Use proper keys for list rendering */}
         {messages.map((message, index) => {
           const isLatestAssistantMessage =
@@ -240,25 +288,36 @@ const MainContent: React.FC<MainContentProps> = ({
       <div className="p-3 border-t border-[#D1C28F] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] shadow-md">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex gap-2">
+            <label htmlFor="chat-input" className="sr-only">
+              Ask Sgt. Ken about becoming a Deputy Sheriff
+            </label>
             <input
+              id="chat-input"
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Sgt. Ken about becoming a Deputy Sheriff..."
               className="flex-1 bg-white dark:bg-[#333333] text-[#0A3C1F] dark:text-white border border-[#D1C28F] dark:border-[#444444] rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700]"
               disabled={isLoading}
+              aria-disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault()
                   handleSubmit(e)
                 }
               }}
+              aria-describedby="chat-input-desc"
             />
+            <span id="chat-input-desc" className="sr-only">
+              Press Enter to send your message or Alt+S to focus this input field
+            </span>
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
               className="sheriff-button flex items-center justify-center w-10 h-10 p-0 rounded-full"
+              aria-label="Send message"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </form>
