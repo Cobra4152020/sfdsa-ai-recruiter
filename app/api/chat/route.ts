@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { queryAI } from "@/lib/ai-services"
 import { headers } from "next/headers"
+import { ApiError, handleApiError } from "@/lib/error-handler"
+import { logger } from "@/lib/logger"
+import { measureAsyncPerformance } from "@/lib/monitoring"
 
 // Simple in-memory rate limiting
 // Note: This won't persist across serverless function invocations
@@ -34,25 +37,31 @@ export async function POST(request: Request) {
     const forwardedFor = headersList.get("x-forwarded-for")
     const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "unknown"
 
+    logger.info("Chat API request", { clientIp })
+
     // Check rate limit
     if (isRateLimited(clientIp)) {
-      return NextResponse.json(
-        {
-          success: false,
-          text: "You've sent too many requests. Please wait a minute before trying again.",
-        },
-        { status: 429 },
-      )
+      logger.warn("Rate limit exceeded", { clientIp })
+      throw new ApiError("You've sent too many requests. Please wait a minute before trying again.", 429)
     }
 
     const { question } = await request.json()
 
     if (!question) {
-      return NextResponse.json({ success: false, message: "Question is required" }, { status: 400 })
+      logger.warn("Missing question in request", { clientIp })
+      throw new ApiError("Question is required", 400)
     }
 
-    // Use our queryAI function from ai-services.ts
-    const aiResponse = await queryAI(question)
+    // Use our queryAI function from ai-services.ts with performance monitoring
+    const aiResponse = await measureAsyncPerformance("ai_query", () => queryAI(question), {
+      question_length: question.length,
+    })
+
+    logger.info("Chat API response success", {
+      clientIp,
+      question_length: question.length,
+      response_length: aiResponse.text.length,
+    })
 
     return NextResponse.json({
       success: true,
@@ -60,25 +69,14 @@ export async function POST(request: Request) {
       source: aiResponse.source,
     })
   } catch (error) {
-    console.error("Error in chat API:", error)
-
-    // Provide more specific error responses based on error type
-    if (error.message?.includes("rate limit")) {
-      return NextResponse.json(
-        {
-          success: false,
-          text: "Our service is experiencing high demand. Please try again in a few minutes.",
-        },
-        { status: 429 },
-      )
-    }
+    const { message, statusCode } = handleApiError(error)
 
     return NextResponse.json(
       {
         success: false,
-        text: "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
+        text: message,
       },
-      { status: 500 },
+      { status: statusCode },
     )
   }
 }
