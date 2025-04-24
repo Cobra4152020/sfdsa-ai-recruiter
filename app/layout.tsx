@@ -5,6 +5,8 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { UserProvider } from "@/context/user-context"
 import { SkipToContent } from "@/components/skip-to-content"
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider"
+import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,8 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <UserProvider>
-            <SkipToContent />
-            <main id="main-content">{children}</main>
+            <Suspense fallback={null}>
+              <AnalyticsProvider>
+                <SkipToContent />
+                <main id="main-content">{children}</main>
+              </AnalyticsProvider>
+            </Suspense>
           </UserProvider>
         </ThemeProvider>
       </body>
