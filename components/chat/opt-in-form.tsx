@@ -1,24 +1,41 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { saveUserOptIn } from "@/app/actions/chat-actions"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 
 interface OptInFormProps {
   onSuccess: (userId: string) => void
 }
 
-export function OptInForm({ onSuccess }: OptInFormProps) {
+export function OptInFormNew({ onSuccess }: OptInFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  })
 
-  async function handleSubmit(formData: FormData) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     try {
       setIsSubmitting(true)
-      const result = await saveUserOptIn(formData)
+
+      // Create FormData object
+      const data = new FormData()
+      data.append("name", formData.name)
+      data.append("email", formData.email)
+      data.append("phone", formData.phone)
+
+      const result = await saveUserOptIn(data)
 
       if (result.success) {
         toast({
@@ -47,72 +64,138 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
     }
   }
 
+  // Inline styles to ensure visibility
+  const containerStyle: React.CSSProperties = {
+    backgroundColor: "white",
+    padding: "24px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    width: "100%",
+    maxWidth: "400px",
+    margin: "0 auto",
+    border: "1px solid #e2e8f0",
+  }
+
+  const headingStyle: React.CSSProperties = {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#1a202c",
+    marginBottom: "16px",
+    textAlign: "center",
+  }
+
+  const subheadingStyle: React.CSSProperties = {
+    fontSize: "16px",
+    color: "#4a5568",
+    marginBottom: "24px",
+    textAlign: "center",
+  }
+
+  const formGroupStyle: React.CSSProperties = {
+    marginBottom: "16px",
+  }
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    marginBottom: "8px",
+    fontWeight: "500",
+    color: "#2d3748",
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "8px 12px",
+    border: "1px solid #cbd5e0",
+    borderRadius: "4px",
+    backgroundColor: "white",
+    color: "#1a202c",
+  }
+
+  const buttonStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px",
+    backgroundColor: "#ecc94b", // Yellow
+    color: "#1a202c",
+    border: "none",
+    borderRadius: "4px",
+    fontWeight: "500",
+    cursor: "pointer",
+    marginTop: "8px",
+  }
+
+  const buttonHoverStyle: React.CSSProperties = {
+    backgroundColor: "#d69e2e",
+  }
+
+  const footerStyle: React.CSSProperties = {
+    fontSize: "12px",
+    color: "#718096",
+    marginTop: "16px",
+    textAlign: "center",
+  }
+
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Chat with Sgt. Ken</h2>
-        <p className="text-gray-700">SFSO Recruitment Assistant</p>
-      </div>
+    <div style={containerStyle}>
+      <h2 style={headingStyle}>Chat with Sgt. Ken</h2>
+      <p style={subheadingStyle}>SFSO Recruitment Assistant</p>
 
-      <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-        <p className="text-gray-800">
-          Ask questions about the application process, requirements, benefits, or anything else you'd like to know about
-          becoming a San Francisco Deputy Sheriff.
-        </p>
-      </div>
-
-      <form action={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-gray-900 font-medium">
+      <form onSubmit={handleSubmit}>
+        <div style={formGroupStyle}>
+          <label htmlFor="name" style={labelStyle}>
             Full Name
-          </Label>
-          <Input
+          </label>
+          <input
+            type="text"
             id="name"
             name="name"
+            value={formData.name}
+            onChange={handleChange}
             placeholder="Your name"
             required
-            className="w-full bg-white text-gray-900 border-gray-300"
+            style={inputStyle}
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-900 font-medium">
+        <div style={formGroupStyle}>
+          <label htmlFor="email" style={labelStyle}>
             Email Address
-          </Label>
-          <Input
+          </label>
+          <input
+            type="email"
             id="email"
             name="email"
-            type="email"
+            value={formData.email}
+            onChange={handleChange}
             placeholder="your@email.com"
             required
-            className="w-full bg-white text-gray-900 border-gray-300"
+            style={inputStyle}
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-gray-900 font-medium">
+        <div style={formGroupStyle}>
+          <label htmlFor="phone" style={labelStyle}>
             Phone Number
-          </Label>
-          <Input
+          </label>
+          <input
+            type="tel"
             id="phone"
             name="phone"
-            type="tel"
+            value={formData.phone}
+            onChange={handleChange}
             placeholder="(415) 555-1234"
-            className="w-full bg-white text-gray-900 border-gray-300"
+            style={inputStyle}
           />
         </div>
 
-        <Button
+        <button
           type="submit"
-          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+          style={isSubmitting ? { ...buttonStyle, opacity: 0.7 } : buttonStyle}
           disabled={isSubmitting}
         >
           {isSubmitting ? "Saving..." : "Save & Continue"}
-        </Button>
+        </button>
 
-        <p className="text-xs text-gray-600 mt-2 text-center">
-          Your information will be used only for recruitment purposes.
-        </p>
+        <p style={footerStyle}>Your information will be used only for recruitment purposes.</p>
       </form>
     </div>
   )

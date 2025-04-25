@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Send } from "lucide-react"
-import { OptInForm } from "./opt-in-form"
+import { OptInFormNew } from "./opt-in-form-new"
 import { saveChatMessage } from "@/app/actions/chat-actions"
 import { queryAI } from "@/lib/ai-services"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -105,8 +105,16 @@ export function ChatInterface() {
 
   if (!userId) {
     return (
-      <div className="bg-white rounded-lg shadow-lg border border-gray-300 overflow-hidden">
-        <OptInForm onSuccess={handleOptInSuccess} />
+      <div
+        style={{
+          backgroundColor: "white",
+          borderRadius: "8px",
+          overflow: "hidden",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          border: "1px solid #e2e8f0",
+        }}
+      >
+        <OptInFormNew onSuccess={handleOptInSuccess} />
       </div>
     )
   }
