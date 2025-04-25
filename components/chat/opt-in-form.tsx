@@ -48,16 +48,23 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-gray-900">Chat with Sergeant Ken</h2>
-      <p className="mb-4 text-gray-700">
-        Please provide your information to start chatting with our recruitment assistant.
-      </p>
+    <div className="w-full max-w-md mx-auto bg-white p-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Chat with Sgt. Ken</h2>
+        <p className="text-gray-700">SFSO Recruitment Assistant</p>
+      </div>
+
+      <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
+        <p className="text-gray-800">
+          Ask questions about the application process, requirements, benefits, or anything else you'd like to know about
+          becoming a San Francisco Deputy Sheriff.
+        </p>
+      </div>
 
       <form action={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-gray-900">
-            Name
+          <Label htmlFor="name" className="text-gray-900 font-medium">
+            Full Name
           </Label>
           <Input
             id="name"
@@ -69,38 +76,42 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-900">
-            Email
+          <Label htmlFor="email" className="text-gray-900 font-medium">
+            Email Address
           </Label>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="Your email"
+            placeholder="your@email.com"
             required
             className="w-full bg-white text-gray-900 border-gray-300"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone" className="text-gray-900">
-            Phone (optional)
+          <Label htmlFor="phone" className="text-gray-900 font-medium">
+            Phone Number
           </Label>
           <Input
             id="phone"
             name="phone"
             type="tel"
-            placeholder="Your phone number"
+            placeholder="(415) 555-1234"
             className="w-full bg-white text-gray-900 border-gray-300"
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Start Chatting"}
+        <Button
+          type="submit"
+          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-medium"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save & Continue"}
         </Button>
 
-        <p className="text-xs text-gray-600 mt-2">
-          Your information will be used only for recruitment purposes and will not be shared with third parties.
+        <p className="text-xs text-gray-600 mt-2 text-center">
+          Your information will be used only for recruitment purposes.
         </p>
       </form>
     </div>

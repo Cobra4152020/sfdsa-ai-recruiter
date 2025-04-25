@@ -20,7 +20,7 @@ export function ChatButton() {
           <MessageSquare className="h-6 w-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md p-0 bg-white border border-gray-200 shadow-lg">
+      <DialogContent className="sm:max-w-md p-0 bg-white border-none shadow-xl">
         <ChatInterface />
       </DialogContent>
     </Dialog>

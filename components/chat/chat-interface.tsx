@@ -104,7 +104,11 @@ export function ChatInterface() {
   }
 
   if (!userId) {
-    return <OptInForm onSuccess={handleOptInSuccess} />
+    return (
+      <div className="bg-white rounded-lg shadow-lg border border-gray-300 overflow-hidden">
+        <OptInForm onSuccess={handleOptInSuccess} />
+      </div>
+    )
   }
 
   return (
