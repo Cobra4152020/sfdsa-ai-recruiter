@@ -59,7 +59,13 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
           <Label htmlFor="name" className="text-gray-900">
             Name
           </Label>
-          <Input id="name" name="name" placeholder="Your name" required className="w-full bg-white text-gray-900" />
+          <Input
+            id="name"
+            name="name"
+            placeholder="Your name"
+            required
+            className="w-full bg-white text-gray-900 border-gray-300"
+          />
         </div>
 
         <div className="space-y-2">
@@ -72,7 +78,7 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
             type="email"
             placeholder="Your email"
             required
-            className="w-full bg-white text-gray-900"
+            className="w-full bg-white text-gray-900 border-gray-300"
           />
         </div>
 
@@ -85,7 +91,7 @@ export function OptInForm({ onSuccess }: OptInFormProps) {
             name="phone"
             type="tel"
             placeholder="Your phone number"
-            className="w-full bg-white text-gray-900"
+            className="w-full bg-white text-gray-900 border-gray-300"
           />
         </div>
 
