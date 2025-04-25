@@ -131,7 +131,7 @@ export function ChatInterface() {
                     : "bg-gray-200 text-gray-900 rounded-tl-none"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap text-inherit">{message.content}</p>
                 <div className={`text-xs mt-1 ${message.role === "user" ? "text-blue-100" : "text-gray-500"}`}>
                   {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
