@@ -2,9 +2,27 @@
 
 import fs from "fs"
 import path from "path"
+import { getServiceSupabase } from "./supabase-client"
+import { logger } from "./logger"
+import { measureAsyncPerformance } from "./monitoring"
 
-// Cache for PDF content to avoid repeated extraction
-const pdfContentCache: Record<string, string> = {}
+// PDF parsing library - only import in runtime, not during build
+let pdfParse: any = null
+
+// Dynamically import pdf-parse only when needed
+async function getPdfParser() {
+  if (!pdfParse) {
+    try {
+      // Dynamic import to avoid loading during build time
+      const module = await import("pdf-parse")
+      pdfParse = module.default
+    } catch (error) {
+      logger.error(`Error importing pdf-parse: ${error}`)
+      throw new Error("PDF parsing library not available")
+    }
+  }
+  return pdfParse
+}
 
 // Get the path to the documents directory
 function getDocumentsDir(): string {
@@ -17,7 +35,7 @@ export async function pdfExists(filename: string): Promise<boolean> {
     const filePath = path.join(getDocumentsDir(), filename)
     return fs.existsSync(filePath)
   } catch (error) {
-    console.error(`Error checking if PDF exists: ${error}`)
+    logger.error(`Error checking if PDF exists: ${error}`)
     return false
   }
 }
@@ -43,17 +61,17 @@ export async function listAvailablePDFs(): Promise<string[]> {
     // For development, we can read the directory
     // Check if directory exists
     if (!fs.existsSync(documentsDir)) {
-      console.warn(`Documents directory not found: ${documentsDir}`)
+      logger.warn(`Documents directory not found: ${documentsDir}`)
       return []
     }
 
     // Read directory and filter for PDF files
     const files = fs.readdirSync(documentsDir).filter((file) => file.toLowerCase().endsWith(".pdf"))
 
-    console.log(`Found ${files.length} PDF files in ${documentsDir}`)
+    logger.info(`Found ${files.length} PDF files in ${documentsDir}`)
     return files
   } catch (error) {
-    console.error(`Error listing PDFs: ${error}`)
+    logger.error(`Error listing PDFs: ${error}`)
     // Fallback to hardcoded list in case of error
     return [
       "cba-2023.pdf",
@@ -65,94 +83,163 @@ export async function listAvailablePDFs(): Promise<string[]> {
   }
 }
 
-// Get content from a PDF - this is kept for backward compatibility
-// but we're not using it for OpenAI integration anymore
+// Get content from a PDF with persistent caching
 export async function getPDFContent(filename: string): Promise<string> {
-  // Check if content is already in cache
-  if (pdfContentCache[filename]) {
-    console.log(`Using cached content for ${filename}`)
-    return pdfContentCache[filename]
-  }
+  try {
+    // First, check if content is cached in Supabase
+    const cachedContent = await getPDFContentFromCache(filename)
+    if (cachedContent) {
+      logger.info(`Using cached content for ${filename} from database`)
+      return cachedContent
+    }
 
+    // If not cached, extract content from PDF
+    const filePath = path.join(getDocumentsDir(), filename)
+
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      logger.error(`PDF file not found: ${filePath}`)
+      throw new Error(`PDF file not found: ${filename}`)
+    }
+
+    // Read the file
+    const dataBuffer = fs.readFileSync(filePath)
+
+    // Parse PDF content with performance monitoring
+    const pdfContent = await measureAsyncPerformance(
+      "pdf_parsing",
+      async () => {
+        try {
+          const parser = await getPdfParser()
+          const data = await parser(dataBuffer)
+          return data.text
+        } catch (parseError) {
+          logger.error(`Error parsing PDF: ${parseError}`)
+          throw new Error(`Failed to parse PDF: ${parseError.message}`)
+        }
+      },
+      { filename },
+    )
+
+    // Cache the content for future requests
+    await cachePDFContent(filename, pdfContent)
+
+    logger.info(`Successfully extracted and cached content for ${filename}`)
+    return pdfContent
+  } catch (error) {
+    logger.error(`Error reading PDF content: ${error}`)
+    throw error
+  }
+}
+
+// Cache PDF content in Supabase
+async function cachePDFContent(filename: string, content: string): Promise<void> {
+  try {
+    const supabase = getServiceSupabase()
+
+    // Check if the pdf_cache table exists, create it if not
+    const { error: tableCheckError } = await supabase.from("pdf_cache").select("count").limit(1).single()
+
+    if (tableCheckError && tableCheckError.code === "PGRST116") {
+      // Table doesn't exist, create it
+      await supabase.rpc("create_pdf_cache_table")
+    }
+
+    // Insert or update the cache entry
+    const { error } = await supabase.from("pdf_cache").upsert(
+      {
+        filename,
+        content,
+        cached_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "filename",
+      },
+    )
+
+    if (error) {
+      logger.error(`Error caching PDF content: ${error}`)
+    }
+  } catch (error) {
+    logger.error(`Error in cachePDFContent: ${error}`)
+  }
+}
+
+// Get cached PDF content from Supabase
+async function getPDFContentFromCache(filename: string): Promise<string | null> {
+  try {
+    const supabase = getServiceSupabase()
+
+    // Check if the pdf_cache table exists
+    const { error: tableCheckError } = await supabase.from("pdf_cache").select("count").limit(1).single()
+
+    if (tableCheckError && tableCheckError.code === "PGRST116") {
+      // Table doesn't exist yet
+      return null
+    }
+
+    // Get the cached content
+    const { data, error } = await supabase
+      .from("pdf_cache")
+      .select("content, cached_at")
+      .eq("filename", filename)
+      .single()
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No rows returned, cache miss
+        return null
+      }
+      logger.error(`Error fetching cached PDF content: ${error}`)
+      return null
+    }
+
+    // Check if cache is stale (older than 24 hours)
+    const cachedAt = new Date(data.cached_at)
+    const now = new Date()
+    const cacheAgeHours = (now.getTime() - cachedAt.getTime()) / (1000 * 60 * 60)
+
+    if (cacheAgeHours > 24) {
+      logger.info(`Cache for ${filename} is stale (${cacheAgeHours.toFixed(2)} hours old)`)
+      return null
+    }
+
+    return data.content
+  } catch (error) {
+    logger.error(`Error in getPDFContentFromCache: ${error}`)
+    return null
+  }
+}
+
+// Get PDF metadata
+export async function getPDFMetadata(filename: string): Promise<{
+  pageCount: number
+  info?: Record<string, any>
+  metadata?: Record<string, any>
+} | null> {
   try {
     const filePath = path.join(getDocumentsDir(), filename)
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      console.error(`PDF file not found: ${filePath}`)
-
-      // Return simulated content as fallback
-      return getSimulatedContent(filename)
+      logger.error(`PDF file not found: ${filePath}`)
+      return null
     }
 
-    // For now, just return simulated content instead of actually parsing the PDF
-    // This avoids dependency issues during build
-    const content = getSimulatedContent(filename)
+    // Read the file
+    const dataBuffer = fs.readFileSync(filePath)
 
-    // Cache the content for future requests
-    pdfContentCache[filename] = content
+    // Parse PDF to get metadata
+    const parser = await getPdfParser()
+    const data = await parser(dataBuffer)
 
-    console.log(`Successfully generated and cached content for ${filename}`)
-    return content
+    return {
+      pageCount: data.numpages,
+      info: data.info,
+      metadata: data.metadata,
+    }
   } catch (error) {
-    console.error(`Error reading PDF content: ${error}`)
-
-    // Return simulated content as fallback
-    return getSimulatedContent(filename)
+    logger.error(`Error getting PDF metadata: ${error}`)
+    return null
   }
-}
-
-// Provide simulated content as fallback
-function getSimulatedContent(filename: string): string {
-  const lowerFilename = filename.toLowerCase()
-
-  if (lowerFilename.includes("sfers") || lowerFilename.includes("retirement")) {
-    return `SAN FRANCISCO EMPLOYEES' RETIREMENT SYSTEM (SFERS) GUIDE
-FOR DEPUTY SHERIFFS
-
-RETIREMENT PLAN OVERVIEW
-The San Francisco Sheriff's Office offers an exceptional retirement package through SFERS. As a deputy sheriff, you are enrolled in the Safety Plan, which provides a defined benefit pension based on your years of service and final compensation.
-
-RETIREMENT FORMULA
-• 3% at age 50 formula (Safety Plan)
-• This means you earn 3% of your final compensation for each year of service when retiring at age 50 or older
-• Maximum benefit: 90% of final compensation (after 30 years of service)
-
-RETIREMENT PERCENTAGE BY YEARS OF SERVICE
-• 5 years: 15% of final compensation
-• 10 years: 30% of final compensation
-• 15 years: 45% of final compensation
-• 20 years: 60% of final compensation
-• 25 years: 75% of final compensation
-• 30 years: 90% of final compensation (maximum)
-
-ELIGIBILITY REQUIREMENTS
-• Service Retirement: Age 50 with at least 5 years of service
-• Service Retirement: Any age with 30 years of service
-• Vesting: 5 years of credited service`
-  }
-
-  if (lowerFilename.includes("cba") || lowerFilename.includes("bargaining")) {
-    return `COLLECTIVE BARGAINING AGREEMENT 2023
-SAN FRANCISCO DEPUTY SHERIFFS' ASSOCIATION
-
-ARTICLE I - REPRESENTATION
-The Deputy Sheriffs' Association (DSA) is recognized as the exclusive representative for all employees in the following classifications:
-• 8302 - Deputy Sheriff
-• 8304 - Senior Deputy Sheriff
-• 8306 - Sheriff's Sergeant
-• 8308 - Sheriff's Lieutenant
-• 8310 - Sheriff's Captain
-• 8312 - Sheriff's Chief Deputy`
-  }
-
-  if (lowerFilename.includes("handbook") || lowerFilename.includes("employee")) {
-    return `SAN FRANCISCO SHERIFF'S OFFICE
-EMPLOYEE HANDBOOK
-
-INTRODUCTION
-Welcome to the San Francisco Sheriff's Office. This handbook provides essential information about your employment, benefits, and responsibilities as a member of our team.`
-  }
-
-  return `[Simulated content for ${filename}]`
 }

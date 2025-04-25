@@ -3,7 +3,8 @@
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { knowledgeBase } from "./knowledge-base"
-import { listAvailablePDFs } from "./pdf-service"
+import { listAvailablePDFs, getPDFContent } from "./pdf-service"
+import { logger } from "./logger"
 
 // Function to check if question is within scope
 function isWithinScope(question: string): boolean {
@@ -38,7 +39,7 @@ async function findRelevantPDF(question: string): Promise<string | null> {
   try {
     const availablePDFs = await listAvailablePDFs()
     if (!availablePDFs || availablePDFs.length === 0) {
-      console.log("No PDFs available")
+      logger.info("No PDFs available")
       return null
     }
 
@@ -75,76 +76,59 @@ async function findRelevantPDF(question: string): Promise<string | null> {
       const matchingPDF = availablePDFs.find((pdf) => pdf.toLowerCase().includes(bestMatchType!.toLowerCase()))
 
       if (matchingPDF) {
-        console.log(`Found matching PDF: ${matchingPDF} for question type: ${bestMatchType}`)
+        logger.info(`Found matching PDF: ${matchingPDF} for question type: ${bestMatchType}`)
         return matchingPDF
       }
     }
 
     // If no specific match, return the first PDF as fallback
     if (availablePDFs.length > 0) {
-      console.log(`No specific match found, using first available PDF: ${availablePDFs[0]}`)
+      logger.info(`No specific match found, using first available PDF: ${availablePDFs[0]}`)
       return availablePDFs[0]
     }
 
     return null
   } catch (error) {
-    console.error("Error finding relevant PDF:", error)
+    logger.error("Error finding relevant PDF:", error)
     return null
   }
 }
 
-// Function to query OpenAI with a PDF file
+// Function to query OpenAI with PDF content
 async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
   try {
-    // In a serverless environment, we need to use the public URL of the PDF
-    // rather than reading from the filesystem directly
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    // Get PDF content using our improved service
+    const pdfContent = await getPDFContent(pdfFilename)
 
-    const pdfUrl = `${baseUrl}/documents/${encodeURIComponent(pdfFilename)}`
-
-    console.log(`Using PDF URL: ${pdfUrl}`)
-
-    // Fetch the PDF file
-    const response = await fetch(pdfUrl)
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`)
+    if (!pdfContent || pdfContent.trim().length === 0) {
+      throw new Error(`Failed to get content from PDF: ${pdfFilename}`)
     }
 
-    const pdfBuffer = await response.arrayBuffer()
-    const pdfData = Buffer.from(pdfBuffer)
-
-    console.log(`Successfully fetched PDF (${pdfData.byteLength} bytes)`)
+    logger.info(`Successfully retrieved content from PDF: ${pdfFilename} (${pdfContent.length} characters)`)
 
     // Add timeout handling for OpenAI calls
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error("OpenAI request timed out")), 30000) // 30 second timeout
     })
 
-    // Generate response using OpenAI with the PDF file
+    // Generate response using OpenAI with the PDF content
     const aiResponsePromise = generateText({
       model: openai("gpt-4o"),
       messages: [
         {
+          role: "system",
+          content: `You are Sergeant Ken, a recruitment officer with the San Francisco Deputy Sheriff's Office with 15 years of experience.
+         Answer the following question based on the provided PDF content.
+         Keep your answer conversational, helpful, and focused on recruitment information.
+         
+         PDF Content:
+         ${pdfContent.substring(0, 15000)} // Limit content to 15,000 characters to avoid token limits
+         
+         If the PDF content doesn't contain relevant information to answer the question, say so and provide general information based on your knowledge.`,
+        },
+        {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: `You are Sergeant Ken, a recruitment officer with the San Francisco Deputy Sheriff's Office with 15 years of experience.
-              Answer the following question based on the provided PDF document.
-              Keep your answer conversational, helpful, and focused on recruitment information.
-              
-              Question: ${question}`,
-            },
-            {
-              type: "file",
-              data: pdfData,
-              mimeType: "application/pdf",
-              filename: pdfFilename,
-            },
-          ],
+          content: question,
         },
       ],
     })
@@ -152,7 +136,7 @@ async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
     // Race the AI response against the timeout
     const { text } = (await Promise.race([aiResponsePromise, timeoutPromise])) as { text: string }
 
-    console.log("Successfully generated response from OpenAI with PDF")
+    logger.info("Successfully generated response from OpenAI with PDF content")
 
     return {
       text,
@@ -160,7 +144,7 @@ async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
       confidence: 0.95,
     }
   } catch (error) {
-    console.error("Error querying OpenAI with PDF:", error)
+    logger.error("Error querying OpenAI with PDF:", error)
     // Return a more specific error message based on the error type
     if (error.message?.includes("timed out")) {
       return {
@@ -212,31 +196,31 @@ export async function queryAI(question: string) {
 
     // Check if this is likely a question about document content
     if (isPDFRelatedQuestion(question)) {
-      console.log("Question appears to be related to PDF content")
+      logger.info("Question appears to be related to PDF content")
 
       // Find the most relevant PDF
       const relevantPDF = await findRelevantPDF(question)
 
       if (relevantPDF) {
-        console.log(`Found relevant PDF: ${relevantPDF}, querying OpenAI with it`)
+        logger.info(`Found relevant PDF: ${relevantPDF}, querying OpenAI with it`)
 
         // Query OpenAI with the PDF
         const pdfResponse = await queryOpenAIWithPDF(question, relevantPDF)
 
         if (pdfResponse) {
-          console.log("Successfully got response from PDF query")
+          logger.info("Successfully got response from PDF query")
           return pdfResponse
         }
 
-        console.log("Failed to get response from PDF query, falling back to knowledge base")
+        logger.info("Failed to get response from PDF query, falling back to knowledge base")
       } else {
-        console.log("No relevant PDF found, falling back to knowledge base")
+        logger.info("No relevant PDF found, falling back to knowledge base")
       }
     }
 
     // If we get here, either it's not a PDF question or PDF processing failed
     // Fall back to the original knowledge base approach
-    console.log("Using knowledge base approach")
+    logger.info("Using knowledge base approach")
 
     // Find relevant context from knowledge base
     const relevantContext = findRelevantContext(question)
@@ -245,11 +229,11 @@ export async function queryAI(question: string) {
     const { text } = await generateText({
       model: openai("gpt-4o"),
       prompt: `You are Sergeant Ken, a recruitment officer with the San Francisco Deputy Sheriff's Office with 15 years of experience. 
-      Answer the following question based on this context: ${relevantContext}
-      
-      Question: ${question}
-      
-      Keep your answer conversational, helpful, and focused on recruitment information.`,
+     Answer the following question based on this context: ${relevantContext}
+     
+     Question: ${question}
+     
+     Keep your answer conversational, helpful, and focused on recruitment information.`,
     })
 
     return {
@@ -258,7 +242,7 @@ export async function queryAI(question: string) {
       confidence: 0.95,
     }
   } catch (error) {
-    console.error("Error querying AI:", error)
+    logger.error("Error querying AI:", error)
 
     // Provide more specific error messages based on error type
     if (error.message?.includes("rate limit")) {
