@@ -199,4 +199,134 @@ export function OptInFormNew({ onSuccess }: OptInFormProps) {
       </form>
     </div>
   )
+}"use client"
+
+import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
+import { useUser } from "@/context/user-context"
+import { saveUserOptIn } from "@/app/actions/chat-actions"
+
+interface OptInFormProps {
+  isOpen: boolean
+  onClose: () => void
+  isApplying?: boolean
 }
+
+export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
+  const { login } = useUser()
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      setIsSubmitting(true)
+      const result = await saveUserOptIn(formData)
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: result.message,
+        })
+        if (result.userId) {
+          login(result.userId)
+        }
+        onClose()
+
+        // If applying, redirect to application page
+        if (isApplying) {
+          window.location.href = "/apply"
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      toast({
+        title: "Error",
+        description: `Something went wrong: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md min-h-[400px]">
+        <DialogHeader>
+          <DialogTitle className="text-center text-xl">
+            {isApplying ? "Start Your Application" : "Chat with Sgt. Ken"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="bg-green-50 p-4 rounded-lg mb-4 border border-green-200">
+          <p className="text-gray-800 text-sm">
+            {isApplying
+              ? "Please provide your information to begin the application process."
+              : "Ask questions about the application process, requirements, benefits, or anything else you'd like to know about becoming a San Francisco Deputy Sheriff."}
+          </p>
+        </div>
+
+        <form action={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-gray-900">
+              Full Name
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              placeholder="Your name"
+              required
+              className="w-full bg-white text-gray-900 border-gray-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-gray-900">
+              Email Address
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="your@email.com"
+              required
+              className="w-full bg-white text-gray-900 border-gray-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-gray-900">
+              Phone Number
+            </Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="(415) 555-1234"
+              className="w-full bg-white text-gray-900 border-gray-300"
+            />
+          </div>
+
+          <Button type="submit" className="w-full bg-green-800 hover:bg-green-900 text-white" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : isApplying ? "Continue to Application" : "Save & Continue"}
+          </Button>
+
+          <p className="text-xs text-gray-600 mt-2 text-center">
+            Your information will be used only for recruitment purposes.
+          </p>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+

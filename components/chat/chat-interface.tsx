@@ -105,23 +105,15 @@ export function ChatInterface() {
 
   if (!userId) {
     return (
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "8px",
-          overflow: "hidden",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-          border: "1px solid #e2e8f0",
-        }}
-      >
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <OptInFormNew onSuccess={handleOptInSuccess} />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-[500px] w-full max-w-md mx-auto border rounded-lg overflow-hidden bg-white shadow-md">
-      <div className="bg-blue-800 text-white p-3 flex items-center">
+    <div className="flex flex-col h-full w-full">
+      <div className="bg-green-800 text-white p-3 flex items-center">
         <Avatar className="h-8 w-8 mr-2">
           <AvatarImage src="/images/sergeant-ken.png" alt="Sergeant Ken" />
           <AvatarFallback>SK</AvatarFallback>
@@ -139,12 +131,12 @@ export function ChatInterface() {
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.role === "user"
-                    ? "bg-blue-600 text-white rounded-tr-none"
+                    ? "bg-green-800 text-white rounded-tr-none"
                     : "bg-gray-200 text-gray-900 rounded-tl-none"
                 }`}
               >
-                <p className="whitespace-pre-wrap text-inherit">{message.content}</p>
-                <div className={`text-xs mt-1 ${message.role === "user" ? "text-blue-100" : "text-gray-500"}`}>
+                <p className="whitespace-pre-wrap">{message.content}</p>
+                <div className={`text-xs mt-1 ${message.role === "user" ? "text-green-100" : "text-gray-500"}`}>
                   {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
@@ -173,7 +165,12 @@ export function ChatInterface() {
           disabled={isLoading}
           className="flex-1 bg-white text-gray-900"
         />
-        <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+        <Button
+          type="submit"
+          size="icon"
+          disabled={isLoading || !input.trim()}
+          className="bg-green-800 hover:bg-green-900"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </form>
