@@ -68,39 +68,34 @@
     @apply bg-white text-[#0A3C1F] dark:bg-[#1E1E1E] dark:text-white;
   }
 
-  /* Improved focus styles for better accessibility */ \
-  *:focus dark:text-white 
-  ;
-}
+  /* Improved focus styles for better accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#FFD700] dark:outline-[#0A3C1F];
+  }
 
-/* Improved focus styles for better accessibility */
-*:focus-visible {
-  @apply outline-2 outline-offset-2 outline-[#FFD700] dark:outline-[#0A3C1F];
-}
+  /* Skip to content link */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 
-/* Skip to content link */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only:focus-visible {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: 0;
-  margin: 0;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
+  .sr-only:focus-visible {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
 }
 
 /* ===== SCROLLING FIXES ===== */
