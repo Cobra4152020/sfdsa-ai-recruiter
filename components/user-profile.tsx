@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +27,22 @@ export function UserProfile() {
     window.location.href = path
   }
 
+  // Get initials for the avatar fallback
+  const getInitials = () => {
+    if (!currentUser?.name) return "U"
+    return currentUser.name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2)
+  }
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar>
-          <AvatarImage src="/placeholder-user.jpg" alt={currentUser?.name} />
-          <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
+      <DropdownMenuTrigger className="focus:outline-none">
+        <Avatar className="bg-[#FFD700] text-[#0A3C1F] border-2 border-white">
+          <AvatarFallback>{getInitials()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -51,9 +61,9 @@ export function UserProfile() {
           <LayoutDashboard className="mr-2 h-4 w-4" />
           <span>Dashboard</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigateTo("/leaderboard")} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => navigateTo("/awards")} className="cursor-pointer">
           <Award className="mr-2 h-4 w-4" />
-          <span>Leaderboard</span>
+          <span>Top Recruit Awards</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

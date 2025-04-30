@@ -204,14 +204,14 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               Discounted Housing
             </a>
             <a
-              href="/leaderboard"
+              href="/awards"
               onClick={(e) => {
                 e.preventDefault()
-                goToPage("/leaderboard")
+                goToPage("/awards")
               }}
               className="text-white hover:text-[#FFD700] transition-colors"
             >
-              Leaderboard
+              Top Recruit Awards
             </a>
             {/* Removed Dashboard Link */}
           </nav>
@@ -312,15 +312,15 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   Discounted Housing
                 </a>
                 <a
-                  href="/leaderboard"
+                  href="/awards"
                   onClick={(e) => {
                     e.preventDefault()
                     setIsMenuOpen(false)
-                    goToPage("/leaderboard")
+                    goToPage("/awards")
                   }}
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                 >
-                  Leaderboard
+                  Top Recruit Awards
                 </a>
                 {/* Removed Dashboard Link */}
 
