@@ -1,213 +1,133 @@
 "use client"
 
-import type React from "react"
-
-import { Shield, Facebook, Twitter, Instagram, Youtube, Mail, Phone, BookOpen, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Facebook, Twitter, Youtube, Instagram, Linkedin } from "lucide-react"
 
 export function ImprovedFooter() {
-  const currentYear = new Date().getFullYear()
-
-  // Use direct navigation for all links
-  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
-    e.preventDefault()
-    window.location.href = path
-  }
-
   return (
-    <footer className="bg-[#0A3C1F] dark:bg-black text-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* About */}
+    <footer className="bg-[#0A3C1F] text-white py-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Column 1: About */}
           <div>
-            <div className="flex items-center mb-4">
-              <Shield className="h-8 w-8 text-[#FFD700] mr-2" />
-              <div>
-                <span className="font-bold text-white text-lg">SF Deputy Sheriff</span>
-                <span className="text-[#FFD700] text-xs block -mt-1">AI Recruitment</span>
-              </div>
-            </div>
-            <p className="text-white/70 mb-4">
-              We are dedicated to recruiting qualified individuals who are committed to public service and safety.
+            <h3 className="text-xl font-bold mb-4">SF Deputy Sheriff</h3>
+            <p className="text-gray-300 mb-4">
+              Join the San Francisco Sheriff's Office and become part of a team dedicated to public safety and community
+              service.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                <Facebook size={20} />
-                <span className="sr-only">Facebook</span>
+            {/* Social Media Links */}
+            <div className="flex space-x-4 mt-4">
+              <a
+                href="https://www.facebook.com/SanFranciscoDeputySheriffsAssociation"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="hover:text-[#FFD700] transition-colors"
+              >
+                <Facebook size={24} />
               </a>
-              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                <Twitter size={20} />
-                <span className="sr-only">Twitter</span>
+              <a
+                href="https://x.com/sanfranciscodsa"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X (Twitter)"
+                className="hover:text-[#FFD700] transition-colors"
+              >
+                <Twitter size={24} />
               </a>
-              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                <Instagram size={20} />
-                <span className="sr-only">Instagram</span>
+              <a
+                href="https://www.youtube.com/channel/UCgyW7q86c-Mua4bS1a9wBWA"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                className="hover:text-[#FFD700] transition-colors"
+              >
+                <Youtube size={24} />
               </a>
-              <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                <Youtube size={20} />
-                <span className="sr-only">YouTube</span>
+              <a
+                href="https://www.instagram.com/sfdeputysheriffsassociation/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="hover:text-[#FFD700] transition-colors"
+              >
+                <Instagram size={24} />
+              </a>
+              <a
+                href="https://www.linkedin.com/company/san-francisco-deputy-sheriffs%E2%80%99-association"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="hover:text-[#FFD700] transition-colors"
+              >
+                <Linkedin size={24} />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="/"
-                  onClick={(e) => handleNavigation(e, "/")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  Home
-                </a>
+                <Link href="#" className="text-gray-300 hover:text-[#FFD700] transition-colors">
+                  About Us
+                </Link>
               </li>
               <li>
-                <a
-                  href="/#benefits"
-                  onClick={(e) => handleNavigation(e, "/#benefits")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
+                <Link href="#" className="text-gray-300 hover:text-[#FFD700] transition-colors">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="text-gray-300 hover:text-[#FFD700] transition-colors">
+                  Requirements
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="text-gray-300 hover:text-[#FFD700] transition-colors">
                   Benefits
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/#testimonials"
-                  onClick={(e) => handleNavigation(e, "/#testimonials")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  Testimonials
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/#faq"
-                  onClick={(e) => handleNavigation(e, "/#faq")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/awards"
-                  onClick={(e) => handleNavigation(e, "/awards")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  Top Recruit Awards
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/practice-tests"
-                  onClick={(e) => handleNavigation(e, "/practice-tests")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
-                >
-                  <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/gi-bill"
-                  onClick={(e) => handleNavigation(e, "/gi-bill")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  G.I. Bill
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/discounted-housing"
-                  onClick={(e) => handleNavigation(e, "/discounted-housing")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  Discounted Housing
-                </a>
+                <Link href="#" className="text-gray-300 hover:text-[#FFD700] transition-colors">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Column 3: Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Resources</h3>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="/practice-tests"
-                  onClick={(e) => handleNavigation(e, "/practice-tests")}
-                  className="text-white/70 hover:text-[#FFD700] transition-colors flex items-center"
-                >
-                  <BookOpen className="h-4 w-4 mr-1" /> Practice Tests
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  Application Guide
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  Fitness Standards
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  Academy Information
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  Career Paths
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  Testimonials
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-[#FFD700]">Contact Us</h3>
-            <ul className="space-y-2 mb-6">
-              <li className="flex items-center">
-                <Mail size={16} className="mr-2 text-[#FFD700]" />
-                <a
-                  href="mailto:recruitment@sfsheriff.com"
-                  className="text-white/70 hover:text-[#FFD700] transition-colors"
-                >
-                  recruitment@sfsheriff.com
-                </a>
-              </li>
-              <li className="flex items-center">
-                <Phone size={16} className="mr-2 text-[#FFD700]" />
-                <a href="tel:+14155547225" className="text-white/70 hover:text-[#FFD700] transition-colors">
-                  (415) 554-7225
-                </a>
-              </li>
-            </ul>
-
-            {/* Chat with Sgt. Ken button */}
-            <div className="mt-4">
-              <a href="/#chat-section" onClick={(e) => handleNavigation(e, "/#chat-section")}>
-                <Button className="w-full bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Chat with Sgt. Ken
-                </Button>
-              </a>
-              <p className="text-xs text-white/50 mt-2 text-center">
-                Have questions? Our AI recruitment officer is available 24/7
+            <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+            <address className="not-italic text-gray-300">
+              <p>San Francisco Sheriff's Office</p>
+              <p>City Hall, Room 456</p>
+              <p>1 Dr. Carlton B. Goodlett Place</p>
+              <p>San Francisco, CA 94102</p>
+              <p className="mt-2">
+                <strong>Phone:</strong> (415) 554-7225
               </p>
-            </div>
+              <p>
+                <strong>Email:</strong> recruitment@sfsheriff.com
+              </p>
+            </address>
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-8 pt-8 text-center text-white/50">
-          <p>&copy; {currentYear} San Francisco Deputy Sheriff's Office. All rights reserved.</p>
+        <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+          <p>&copy; {new Date().getFullYear()} San Francisco Deputy Sheriff. All rights reserved.</p>
+          <div className="mt-2 space-x-4">
+            <Link href="#" className="hover:text-[#FFD700] transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="#" className="hover:text-[#FFD700] transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="#" className="hover:text-[#FFD700] transition-colors">
+              Accessibility
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

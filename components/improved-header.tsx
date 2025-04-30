@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useUser } from "@/context/user-context"
 import { UserProfile } from "@/components/user-profile"
 import { usePathname } from "next/navigation"
+import { SocialMediaLinks } from "./social-media-links"
 
 interface ImprovedHeaderProps {
   showOptInForm: () => void
@@ -107,6 +108,11 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               <span className="text-[#FFD700] text-xs block -mt-1">AI Recruitment</span>
             </div>
           </a>
+
+          {/* Social Media Links - Desktop Only */}
+          <div className="hidden md:flex items-center">
+            <SocialMediaLinks className="text-white" />
+          </div>
 
           {/* Theme toggle and mobile menu button */}
           <div className="flex items-center gap-2">
@@ -294,6 +300,12 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 >
                   Discounted Housing
                 </a>
+
+                {/* Social Media Links - Mobile Only */}
+                <div className="pt-2 border-t border-white/10">
+                  <p className="text-white/70 text-sm mb-2">Follow Us:</p>
+                  <SocialMediaLinks className="text-white" showLabels={true} />
+                </div>
 
                 <div className="pt-4 border-t border-white/10 flex flex-col space-y-3">
                   {isLoggedIn ? (
