@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { UserProvider, useUser } from "@/context/user-context"
 import { OptInForm } from "@/components/opt-in-form"
 import { ImprovedHeader } from "@/components/improved-header"
@@ -21,6 +21,7 @@ type MessageType = {
   content: string | React.ReactNode
   quickReplies?: string[]
   source?: string
+  id?: string
 }
 
 function RecruitmentApp() {
@@ -30,6 +31,7 @@ function RecruitmentApp() {
       content:
         "Hey there! I'm Sergeant Ken, but you can call me Sgt. Ken. I've been with the San Francisco Sheriff's Office for 15 years now, and I've got to tell you - it's been an incredible journey! With unemployment on the rise, there's never been a better time to consider a stable, rewarding career in law enforcement. What would you like to know about becoming a Deputy Sheriff? I'm here to help you take that first step toward an exciting new career!",
       quickReplies: ["Tell me about the salary", "What are the requirements?", "How do I apply?"],
+      id: "welcome-message",
     },
   ])
   const [input, setInput] = useState("")
@@ -38,6 +40,7 @@ function RecruitmentApp() {
   const [isOptInFormOpen, setIsOptInFormOpen] = useState(false)
   const [isApplying, setIsApplying] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const chatSectionRef = useRef<HTMLElement>(null)
 
   const { incrementParticipation, isLoggedIn } = useUser()
 
@@ -63,7 +66,7 @@ function RecruitmentApp() {
 
   const handleUserMessage = async (message: string) => {
     // Add user message
-    setMessages((prev) => [...prev, { role: "user", content: message }])
+    setMessages((prev) => [...prev, { role: "user", content: message, id: `user-${Date.now()}` }])
     setInput("")
     setIsLoading(true)
 
@@ -85,6 +88,7 @@ function RecruitmentApp() {
           content: aiResponse.text,
           quickReplies: quickReplies,
           source: aiResponse.source,
+          id: `assistant-${Date.now()}`,
         },
       ])
     } catch (error) {
@@ -96,8 +100,9 @@ function RecruitmentApp() {
         {
           role: "assistant",
           content:
-            "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
+            "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
           quickReplies: ["Tell me about requirements", "What's the application process?", "How's the work schedule?"],
+          id: `error-${Date.now()}`,
         },
       ])
     } finally {
@@ -126,12 +131,12 @@ function RecruitmentApp() {
 
   const startChat = () => {
     setShowChat(true)
-    // Use a more controlled scroll with a slight delay to ensure the chat is rendered
+
+    // Use a more reliable scrolling method with a slight delay
     setTimeout(() => {
-      const chatSection = document.getElementById("chat-section")
-      if (chatSection) {
-        const headerOffset = 80 // Approximate header height
-        const elementPosition = chatSection.getBoundingClientRect().top
+      if (chatSectionRef.current) {
+        const headerOffset = 120 // Approximate header height
+        const elementPosition = chatSectionRef.current.getBoundingClientRect().top
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset
 
         window.scrollTo({
@@ -162,7 +167,7 @@ function RecruitmentApp() {
         </section>
 
         {showChat && (
-          <section id="chat-section" className="bg-[#F8F5EE] dark:bg-[#121212] py-16">
+          <section id="chat-section" ref={chatSectionRef} className="bg-[#F8F5EE] dark:bg-[#121212] py-16 scroll-mt-20">
             <div className="container mx-auto px-4">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#0A3C1F] dark:text-[#FFD700]">
@@ -175,13 +180,12 @@ function RecruitmentApp() {
               </div>
 
               <div className="max-w-4xl mx-auto bg-white dark:bg-[#1E1E1E] rounded-xl shadow-xl overflow-hidden border border-[#E0D6B8] dark:border-[#333333]">
-                <div className="h-[400px] flex flex-col">
+                <div className="h-[500px] flex flex-col">
                   <MainContent
                     messages={messages}
                     onSendMessage={handleUserMessage}
                     isLoading={isLoading}
                     displayedResponse={displayedResponse}
-                    showOptInForm={() => showOptInForm(false)}
                   />
                 </div>
               </div>

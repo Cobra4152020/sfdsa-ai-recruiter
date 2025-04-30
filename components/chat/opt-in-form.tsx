@@ -1,10 +1,13 @@
+// /components/opt-in-form-new.tsx
 "use client"
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { saveUserOptIn } from "@/app/actions/chat-actions"
 import { useToast } from "@/components/ui/use-toast"
+import { motion } from "framer-motion"
+import { Loader2 } from "lucide-react"
 
 interface OptInFormProps {
   onSuccess: (userId: string) => void
@@ -12,12 +15,19 @@ interface OptInFormProps {
 
 export function OptInFormNew({ onSuccess }: OptInFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
   })
+
+  const nameInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    nameInputRef.current?.focus()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -28,8 +38,6 @@ export function OptInFormNew({ onSuccess }: OptInFormProps) {
     e.preventDefault()
     try {
       setIsSubmitting(true)
-
-      // Create FormData object
       const data = new FormData()
       data.append("name", formData.name)
       data.append("email", formData.email)
@@ -38,216 +46,16 @@ export function OptInFormNew({ onSuccess }: OptInFormProps) {
       const result = await saveUserOptIn(data)
 
       if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
-        if (result.userId) {
-          onSuccess(result.userId)
-        }
+        setIsSuccess(true)
+        setTimeout(() => {
+          if (result.userId) {
+            onSuccess(result.userId)
+          }
+        }, 1500)
       } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
+        toast({ title: "Error", description: result.message, variant: "destructive" })
       }
-    } catch (error) {
-      console.error("Error submitting form:", error)
-      toast({
-        title: "Error",
-        description: `Something went wrong: ${error.message}`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Inline styles to ensure visibility
-  const containerStyle: React.CSSProperties = {
-    backgroundColor: "white",
-    padding: "24px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    width: "100%",
-    maxWidth: "400px",
-    margin: "0 auto",
-    border: "1px solid #e2e8f0",
-  }
-
-  const headingStyle: React.CSSProperties = {
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "#1a202c",
-    marginBottom: "16px",
-    textAlign: "center",
-  }
-
-  const subheadingStyle: React.CSSProperties = {
-    fontSize: "16px",
-    color: "#4a5568",
-    marginBottom: "24px",
-    textAlign: "center",
-  }
-
-  const formGroupStyle: React.CSSProperties = {
-    marginBottom: "16px",
-  }
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    marginBottom: "8px",
-    fontWeight: "500",
-    color: "#2d3748",
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "8px 12px",
-    border: "1px solid #cbd5e0",
-    borderRadius: "4px",
-    backgroundColor: "white",
-    color: "#1a202c",
-  }
-
-  const buttonStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#ecc94b", // Yellow
-    color: "#1a202c",
-    border: "none",
-    borderRadius: "4px",
-    fontWeight: "500",
-    cursor: "pointer",
-    marginTop: "8px",
-  }
-
-  const buttonHoverStyle: React.CSSProperties = {
-    backgroundColor: "#d69e2e",
-  }
-
-  const footerStyle: React.CSSProperties = {
-    fontSize: "12px",
-    color: "#718096",
-    marginTop: "16px",
-    textAlign: "center",
-  }
-
-  return (
-    <div style={containerStyle}>
-      <h2 style={headingStyle}>Chat with Sgt. Ken</h2>
-      <p style={subheadingStyle}>SFSO Recruitment Assistant</p>
-
-      <form onSubmit={handleSubmit}>
-        <div style={formGroupStyle}>
-          <label htmlFor="name" style={labelStyle}>
-            Full Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Your name"
-            required
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
-          <label htmlFor="email" style={labelStyle}>
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="your@email.com"
-            required
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={formGroupStyle}>
-          <label htmlFor="phone" style={labelStyle}>
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="(415) 555-1234"
-            style={inputStyle}
-          />
-        </div>
-
-        <button
-          type="submit"
-          style={isSubmitting ? { ...buttonStyle, opacity: 0.7 } : buttonStyle}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Saving..." : "Save & Continue"}
-        </button>
-
-        <p style={footerStyle}>Your information will be used only for recruitment purposes.</p>
-      </form>
-    </div>
-  )
-}"use client"
-
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
-import { useUser } from "@/context/user-context"
-import { saveUserOptIn } from "@/app/actions/chat-actions"
-
-interface OptInFormProps {
-  isOpen: boolean
-  onClose: () => void
-  isApplying?: boolean
-}
-
-export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
-  const { login } = useUser()
-
-  async function handleSubmit(formData: FormData) {
-    try {
-      setIsSubmitting(true)
-      const result = await saveUserOptIn(formData)
-
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        })
-        if (result.userId) {
-          login(result.userId)
-        }
-        onClose()
-
-        // If applying, redirect to application page
-        if (isApplying) {
-          window.location.href = "/apply"
-        }
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting form:", error)
       toast({
         title: "Error",
@@ -260,73 +68,95 @@ export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProp
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md min-h-[400px]">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl">
-            {isApplying ? "Start Your Application" : "Chat with Sgt. Ken"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="bg-green-50 p-4 rounded-lg mb-4 border border-green-200">
-          <p className="text-gray-800 text-sm">
-            {isApplying
-              ? "Please provide your information to begin the application process."
-              : "Ask questions about the application process, requirements, benefits, or anything else you'd like to know about becoming a San Francisco Deputy Sheriff."}
-          </p>
+    <motion.div
+      className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm mx-auto border border-gray-200 md:max-w-md"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      {isSuccess ? (
+        <div className="flex flex-col items-center justify-center h-72">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="text-green-500 mb-4"
+          >
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </motion.div>
+          <h2 className="text-2xl font-bold text-gray-800 text-center">Success!</h2>
+          <p className="text-gray-600 text-center mt-2">Starting chat...</p>
         </div>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Chat with Sgt. Ken</h2>
+          <p className="text-gray-600 text-center mb-6">SFSO Recruitment Assistant</p>
 
-        <form action={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-900">
-              Full Name
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Your name"
-              required
-              className="w-full bg-white text-gray-900 border-gray-300"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block mb-1 font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                ref={nameInputRef}
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-900">
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="your@email.com"
-              required
-              className="w-full bg-white text-gray-900 border-gray-300"
-            />
-          </div>
+            <div>
+              <label htmlFor="email" className="block mb-1 font-medium text-gray-700">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your@email.com"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-gray-900">
-              Phone Number
-            </Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              placeholder="(415) 555-1234"
-              className="w-full bg-white text-gray-900 border-gray-300"
-            />
-          </div>
+            <div>
+              <label htmlFor="phone" className="block mb-1 font-medium text-gray-700">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="(415) 555-1234"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+              />
+            </div>
 
-          <Button type="submit" className="w-full bg-green-800 hover:bg-green-900 text-white" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isApplying ? "Continue to Application" : "Save & Continue"}
-          </Button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium rounded-md transition disabled:opacity-70 flex justify-center items-center"
+            >
+              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save & Continue"}
+            </button>
 
-          <p className="text-xs text-gray-600 mt-2 text-center">
-            Your information will be used only for recruitment purposes.
-          </p>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <p className="text-xs text-gray-500 text-center mt-4">
+              Your information will be used only for recruitment purposes.
+            </p>
+          </form>
+        </>
+      )}
+    </motion.div>
   )
 }
-

@@ -1,3 +1,4 @@
+// /components/chat-interface.tsx
 "use client"
 
 import type React from "react"
@@ -11,6 +12,8 @@ import { saveChatMessage } from "@/app/actions/chat-actions"
 import { queryAI } from "@/lib/ai-services"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { motion } from "framer-motion"
+import { Tooltip } from "@/components/ui/tooltip"
 
 interface Message {
   id: string
@@ -19,29 +22,47 @@ interface Message {
   timestamp: Date
 }
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  animateMessages?: boolean
+}
+
+export function ChatInterface({ animateMessages }: ChatInterfaceProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [showTyping, setShowTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [isNearBottom, setIsNearBottom] = useState(true)
 
-  // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages, showTyping, isNearBottom])
 
-  // Focus input when userId is set
   useEffect(() => {
     if (userId) {
       inputRef.current?.focus()
     }
   }, [userId])
 
+  const handleScroll = () => {
+    if (!scrollAreaRef.current) return
+    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current
+    const nearBottom = scrollHeight - scrollTop - clientHeight < 100
+    setIsNearBottom(nearBottom)
+  }
+
+  const calculateTypingDelay = (text: string) => {
+    const words = text.split(" ").length
+    return Math.min(3000, words * 100)
+  }
+
   const handleOptInSuccess = (newUserId: string) => {
     setUserId(newUserId)
-    // Add welcome message
     setMessages([
       {
         id: "welcome",
@@ -60,7 +81,6 @@ export function ChatInterface() {
     const userMessage = input.trim()
     setInput("")
 
-    // Add user message to chat
     const userMessageObj: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -69,35 +89,41 @@ export function ChatInterface() {
     }
     setMessages((prev) => [...prev, userMessageObj])
 
-    // Show loading state
     setIsLoading(true)
 
     try {
-      // Save message to database
       await saveChatMessage(userId, userMessage)
 
-      // Get AI response
+      setShowTyping(true)
+
       const aiResponse = await queryAI(userMessage)
 
-      // Add AI response to chat
       const assistantMessageObj: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: aiResponse?.text || "I'm sorry, I couldn't process your request at this time.",
         timestamp: new Date(),
       }
-      setMessages((prev) => [...prev, assistantMessageObj])
+
+      const delay = calculateTypingDelay(assistantMessageObj.content)
+
+      setTimeout(() => {
+        setShowTyping(false)
+        setMessages((prev) => [...prev, assistantMessageObj])
+      }, delay)
     } catch (error) {
       console.error("Error in chat:", error)
-      // Add error message
       const errorMessageObj: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 2).toString(),
         role: "assistant",
         content:
           "I'm sorry, I'm having trouble connecting to our systems right now. Please try again later or contact our recruitment team directly.",
         timestamp: new Date(),
       }
-      setMessages((prev) => [...prev, errorMessageObj])
+      setTimeout(() => {
+        setShowTyping(false)
+        setMessages((prev) => [...prev, errorMessageObj])
+      }, 1500)
     } finally {
       setIsLoading(false)
     }
@@ -105,7 +131,7 @@ export function ChatInterface() {
 
   if (!userId) {
     return (
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="flex flex-1 justify-center items-center">
         <OptInFormNew onSuccess={handleOptInSuccess} />
       </div>
     )
@@ -124,25 +150,34 @@ export function ChatInterface() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4 bg-gray-50">
+      <ScrollArea className="flex-1 p-4 bg-gray-50" onScroll={handleScroll} ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.role === "user"
-                    ? "bg-green-800 text-white rounded-tr-none"
-                    : "bg-gray-200 text-gray-900 rounded-tl-none"
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{message.content}</p>
-                <div className={`text-xs mt-1 ${message.role === "user" ? "text-green-100" : "text-gray-500"}`}>
-                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            <motion.div
+              key={message.id}
+              initial={animateMessages ? { opacity: 0, y: 10 } : false}
+              animate={animateMessages ? { opacity: 1, y: 0 } : false}
+              transition={{ duration: 0.3 }}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <Tooltip content={message.timestamp.toLocaleString()}>
+                <div
+                  className={`max-w-[80%] rounded-lg p-3 ${
+                    message.role === "user"
+                      ? "bg-green-800 text-white rounded-tr-none"
+                      : "bg-gray-200 text-gray-900 rounded-tl-none"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <div className={`text-xs mt-1 ${message.role === "user" ? "text-green-100" : "text-gray-500"}`}>
+                    {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Tooltip>
+            </motion.div>
           ))}
-          {isLoading && (
+
+          {showTyping && (
             <div className="flex justify-start">
               <div className="max-w-[80%] rounded-lg p-3 bg-gray-200 text-gray-900 rounded-tl-none">
                 <div className="flex items-center">
@@ -152,6 +187,7 @@ export function ChatInterface() {
               </div>
             </div>
           )}
+
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
