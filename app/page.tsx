@@ -17,7 +17,6 @@ import MainContent from "@/components/MainContent"
 import * as aiService from "@/lib/ai-services"
 // Add this import at the top
 import { DebugUser } from "@/components/debug-user"
-import { HeaderSpacer } from "@/components/header-spacer"
 
 type MessageType = {
   role: "assistant" | "user"
@@ -153,7 +152,6 @@ function RecruitmentApp() {
   return (
     <div className="min-h-screen flex flex-col">
       <ImprovedHeader showOptInForm={() => showOptInForm(true)} />
-      <HeaderSpacer /> {/* Add this line right after the header */}
       <main className="flex-1">
         <HeroSection onGetStarted={startChat} showOptInForm={() => showOptInForm(true)} />
 
