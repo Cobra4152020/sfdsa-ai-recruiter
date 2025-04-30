@@ -32,7 +32,11 @@ const ChatMessage = memo(({ message, isLatest, displayedResponse, renderTextWith
   return (
     <div className={`max-w-3xl mx-auto ${isUser ? "ml-auto" : ""}`} role="listitem">
       <div
-        className={`rounded-lg p-3 ${isUser ? "user-message ml-12 sm:ml-24 shadow-md" : "assistant-message shadow-md"}`}
+        className={`rounded-lg p-3 ${
+          isUser
+            ? "bg-[#E0D6B8] text-[#0A3C1F] dark:bg-[#D1C28F] dark:text-[#0A3C1F] ml-12 sm:ml-24 shadow-md"
+            : "assistant-message shadow-md"
+        }`}
       >
         <div className="prose prose-sm dark:prose-invert max-w-none" aria-live={isLatest && !isUser ? "polite" : "off"}>
           {typeof messageContent === "string" ? renderTextWithLinks(messageContent) : messageContent}

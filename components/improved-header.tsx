@@ -48,7 +48,8 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
       const mainContent = document.querySelector("main")
       if (mainContent) {
         // Apply top margin to the main content equal to the header height
-        mainContent.style.marginTop = `${headerHeight}px`
+        // Reduced by 75% as requested
+        mainContent.style.marginTop = `${headerHeight * 0.25}px`
       }
     }
 
@@ -82,14 +83,14 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
       ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-[#0A3C1F]/95 dark:bg-black/95 backdrop-blur-md py-2 shadow-lg"
-          : "bg-[#0A3C1F]/80 dark:bg-black/80 backdrop-blur-sm py-2"
+          ? "bg-[#0A3C1F]/95 dark:bg-black/95 backdrop-blur-md py-1 shadow-lg"
+          : "bg-[#0A3C1F] dark:bg-black backdrop-blur-sm py-1"
       }`}
       role="banner"
     >
       <div className="container mx-auto px-4">
         {/* Top row with logo and theme toggle */}
-        <div className="flex items-center justify-between py-2 border-b border-white/10">
+        <div className="flex items-center justify-between py-1 border-b border-white/10">
           {/* Logo */}
           <a
             href="/"
@@ -141,7 +142,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
         </div>
 
         {/* Bottom row with navigation and buttons */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between py-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between py-1">
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6" aria-label="Main Navigation">
             {!isHomePage && (
@@ -199,7 +200,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
           </nav>
 
           {/* Right side buttons */}
-          <div className="hidden md:flex items-center space-x-4 mt-2 md:mt-0">
+          <div className="hidden md:flex items-center space-x-4 mt-1 md:mt-0">
             {isLoggedIn ? (
               <UserProfile />
             ) : (

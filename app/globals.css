@@ -19,6 +19,7 @@
   --border: 209, 194, 143; /* Light gold */
   --input: 209, 194, 143; /* Light gold */
   --ring: 10, 60, 31; /* Dark green */
+  --header-height: 0px; /* This will be set dynamically by the header component */
 }
 
 .dark {
@@ -42,14 +43,15 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-b from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))];
+    @apply bg-[#F8F5EE] dark:bg-[#121212];
     color: rgb(var(--foreground-rgb));
+    scroll-padding-top: var(--header-height);
   }
 
   /* Smooth scrolling for better UX */
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 120px; /* Adjust based on your header height */
+    scroll-padding-top: var(--header-height);
   }
 }
 
@@ -59,41 +61,46 @@
   }
 
   .user-message {
-    @apply bg-[#0A3C1F] text-white dark:bg-[#333333] dark:text-white;
+    @apply bg-[#E0D6B8] text-[#0A3C1F] dark:bg-[#D1C28F] dark:text-[#0A3C1F];
   }
 
   .assistant-message {
     @apply bg-white text-[#0A3C1F] dark:bg-[#1E1E1E] dark:text-white;
   }
 
-  /* Improved focus styles for better accessibility */
-  *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-[#FFD700] dark:outline-[#0A3C1F];
-  }
+  /* Improved focus styles for better accessibility */ \
+  *:focus dark:text-white 
+  ;
+}
 
-  /* Skip to content link */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
+/* Improved focus styles for better accessibility */
+*:focus-visible {
+  @apply outline-2 outline-offset-2 outline-[#FFD700] dark:outline-[#0A3C1F];
+}
 
-  .sr-only:focus-visible {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0;
-    margin: 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
+/* Skip to content link */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
 }
 
 /* ===== SCROLLING FIXES ===== */
@@ -103,7 +110,8 @@ main {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-top: 120px; /* Adjust based on your header height */
+  padding-top: var(--header-height); /* Use the dynamic header height */
+  background-color: #0a3c1f; /* Match the green color of the header */
 }
 
 /* Improve scrolling behavior */
@@ -119,7 +127,7 @@ main {
 
 /* Fix scroll margin for sections with header */
 section[id] {
-  scroll-margin-top: 120px; /* Adjust based on your header height */
+  scroll-margin-top: var(--header-height);
 }
 
 /* ===== HEADER FIXES ===== */
@@ -148,7 +156,7 @@ header.fixed {
   header + *,
   .header + *,
   .improved-header + * {
-    margin-top: 1rem;
+    margin-top: 0; /* Reduced spacing */
   }
 
   /* Fix for image containers in header */
@@ -241,5 +249,5 @@ img {
 
 /* Fix for the chat section to ensure proper spacing with fixed header */
 #chat-section {
-  scroll-margin-top: 120px; /* Adjust based on your header height */
+  scroll-margin-top: var(--header-height);
 }
