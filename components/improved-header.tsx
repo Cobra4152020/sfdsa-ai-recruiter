@@ -203,6 +203,26 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
             >
               Discounted Housing
             </a>
+            <a
+              href="/leaderboard"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/leaderboard")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors"
+            >
+              Leaderboard
+            </a>
+            <a
+              href="/dashboard"
+              onClick={(e) => {
+                e.preventDefault()
+                goToPage("/dashboard")
+              }}
+              className="text-white hover:text-[#FFD700] transition-colors"
+            >
+              Dashboard
+            </a>
           </nav>
 
           {/* Right side buttons */}
@@ -299,6 +319,28 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   className="text-white hover:text-[#FFD700] py-2 transition-colors"
                 >
                   Discounted Housing
+                </a>
+                <a
+                  href="/leaderboard"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/leaderboard")
+                  }}
+                  className="text-white hover:text-[#FFD700] py-2 transition-colors"
+                >
+                  Leaderboard
+                </a>
+                <a
+                  href="/dashboard"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsMenuOpen(false)
+                    goToPage("/dashboard")
+                  }}
+                  className="text-white hover:text-[#FFD700] py-2 transition-colors"
+                >
+                  Dashboard
                 </a>
 
                 {/* Social Media Links - Mobile Only */}
