@@ -1,61 +1,59 @@
 import { createClient } from "@supabase/supabase-js"
-import { logger } from "./logger"
 
-// For server components and API routes
-let serviceSupabaseClient: ReturnType<typeof createClient> | null = null
-
-export function getServiceSupabase() {
-  if (serviceSupabaseClient) {
-    return serviceSupabaseClient
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    logger.error("Missing Supabase environment variables")
-    throw new Error("Missing required environment variables for Supabase")
-  }
-
-  try {
-    serviceSupabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    })
-    return serviceSupabaseClient
-  } catch (error) {
-    logger.error(`Error initializing Supabase client: ${error}`)
-    throw new Error(`Failed to initialize Supabase client: ${error.message}`)
-  }
+// Check if required environment variables are available
+const hasRequiredEnvVars = () => {
+  return !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY
 }
 
-// For client components
-let browserSupabaseClient: ReturnType<typeof createClient> | null = null
-
-export function getBrowserSupabase() {
-  if (typeof window === "undefined") {
-    throw new Error("getBrowserSupabase should only be called in client components")
+// Create a Supabase client with the service role key
+export function getServiceSupabase() {
+  if (!hasRequiredEnvVars()) {
+    console.warn("Missing required environment variables for Supabase, returning mock client")
+    // Return a mock client or null - API routes will handle this by returning mock data
+    return {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => ({ data: null, error: new Error("Mock client - no env vars") }),
+            in: () => ({ data: [], error: null }),
+            order: () => ({ limit: () => ({ data: [], error: null }) }),
+            gt: () => ({ count: () => ({ count: 0, error: null }) }),
+          }),
+          order: () => ({
+            limit: () => ({ data: [], error: null }),
+          }),
+          in: () => ({ data: [], error: null }),
+        }),
+        insert: () => ({ select: () => ({ data: null, error: null }) }),
+      }),
+    } as any
   }
 
-  if (browserSupabaseClient) {
-    return browserSupabaseClient
+  return createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
+
+// Create a Supabase client with the anonymous key for client-side use
+let supabaseClient: ReturnType<typeof createClient> | null = null
+
+export function getSupabaseClient() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn("Missing Supabase client environment variables")
+    return null
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables")
-    throw new Error("Missing required environment variables for Supabase")
+  if (!supabaseClient) {
+    supabaseClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+      },
+    })
   }
 
-  try {
-    browserSupabaseClient = createClient(supabaseUrl, supabaseAnonKey)
-    return browserSupabaseClient
-  } catch (error) {
-    console.error(`Error initializing browser Supabase client: ${error}`)
-    throw new Error(`Failed to initialize browser Supabase client: ${error.message}`)
-  }
+  return supabaseClient
 }

@@ -11,6 +11,9 @@ import { AchievementBadge } from "@/components/achievement-badge"
 import { DebugUser } from "@/components/debug-user"
 import { SkipToContent } from "@/components/skip-to-content"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
 import type { BadgeType } from "@/app/api/leaderboard/route"
 
 interface Badge {
@@ -43,52 +46,64 @@ function UserDashboard() {
     setIsOptInFormOpen(true)
   }
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!isLoggedIn || !currentUser) {
       setIsLoading(false)
       return
     }
 
-    const fetchData = async () => {
-      setIsLoading(true)
-      setError(null)
+    setIsLoading(true)
+    setError(null)
 
+    try {
+      // Fetch all badges
+      const badgesResponse = await fetch("/api/badges")
+      if (!badgesResponse.ok) {
+        throw new Error(`Failed to fetch badges: ${badgesResponse.status}`)
+      }
+      const badgesData = await badgesResponse.json()
+
+      if (!badgesData.success) {
+        throw new Error(badgesData.message || "Failed to fetch badges")
+      }
+
+      setAllBadges(badgesData.badges)
+
+      // Fetch user's badges
+      const userBadgesResponse = await fetch(`/api/users/${currentUser.id}/badges`)
+      if (!userBadgesResponse.ok) {
+        throw new Error(`Failed to fetch user badges: ${userBadgesResponse.status}`)
+      }
+      const userBadgesData = await userBadgesResponse.json()
+
+      if (!userBadgesData.success) {
+        throw new Error(userBadgesData.message || "Failed to fetch user badges")
+      }
+
+      setUserBadges(userBadgesData.badges)
+
+      // Fetch user's leaderboard position
       try {
-        // Fetch all badges
-        const badgesResponse = await fetch("/api/badges")
-        const badgesData = await badgesResponse.json()
-
-        if (!badgesData.success) {
-          throw new Error(badgesData.message || "Failed to fetch badges")
-        }
-
-        setAllBadges(badgesData.badges)
-
-        // Fetch user's badges
-        const userBadgesResponse = await fetch(`/api/users/${currentUser.id}/badges`)
-        const userBadgesData = await userBadgesResponse.json()
-
-        if (!userBadgesData.success) {
-          throw new Error(userBadgesData.message || "Failed to fetch user badges")
-        }
-
-        setUserBadges(userBadgesData.badges)
-
-        // Fetch user's leaderboard position
         const leaderboardResponse = await fetch(`/api/users/${currentUser.id}/leaderboard-position`)
-        const leaderboardData = await leaderboardResponse.json()
-
-        if (leaderboardData.success) {
-          setLeaderboardPosition(leaderboardData.position)
+        if (leaderboardResponse.ok) {
+          const leaderboardData = await leaderboardResponse.json()
+          if (leaderboardData.success) {
+            setLeaderboardPosition(leaderboardData.position)
+          }
         }
       } catch (err) {
-        console.error("Error fetching data:", err)
-        setError("Failed to load your data. Please try again later.")
-      } finally {
-        setIsLoading(false)
+        // Don't fail the whole dashboard if just the leaderboard position fails
+        console.error("Error fetching leaderboard position:", err)
       }
+    } catch (err) {
+      console.error("Error fetching data:", err)
+      setError(err instanceof Error ? err.message : "Failed to load your data")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [isLoggedIn, currentUser])
 
@@ -116,8 +131,10 @@ function UserDashboard() {
     "application-completed",
   ]
 
-  const applicationBadges = allBadges.filter((badge) => applicationBadgeTypes.includes(badge.badge_type))
-  const participationBadges = allBadges.filter((badge) => !applicationBadgeTypes.includes(badge.badge_type))
+  const applicationBadges = allBadges.filter((badge) => applicationBadgeTypes.includes(badge.badge_type as BadgeType))
+  const participationBadges = allBadges.filter(
+    (badge) => !applicationBadgeTypes.includes(badge.badge_type as BadgeType),
+  )
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -155,11 +172,16 @@ function UserDashboard() {
             </div>
           ) : error ? (
             <div className="max-w-4xl mx-auto">
-              <Card>
-                <CardContent className="py-8">
-                  <div className="text-center text-red-500">{error}</div>
-                </CardContent>
-              </Card>
+              <Alert variant="destructive" className="mb-6">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+              <div className="flex justify-center">
+                <Button onClick={fetchData} className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="max-w-4xl mx-auto space-y-8">
@@ -220,9 +242,9 @@ function UserDashboard() {
                         {allBadges.map((badge) => (
                           <div key={badge.id} className="flex flex-col items-center text-center p-2">
                             <AchievementBadge
-                              type={badge.badge_type}
+                              type={badge.badge_type as BadgeType}
                               size="md"
-                              earned={hasEarnedBadge(badge.badge_type)}
+                              earned={hasEarnedBadge(badge.badge_type as BadgeType)}
                             />
                             <h3 className="font-medium mt-2 text-sm">{badge.name}</h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.description}</p>
@@ -234,10 +256,10 @@ function UserDashboard() {
                     <TabsContent value="earned">
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {allBadges
-                          .filter((badge) => hasEarnedBadge(badge.badge_type))
+                          .filter((badge) => hasEarnedBadge(badge.badge_type as BadgeType))
                           .map((badge) => (
                             <div key={badge.id} className="flex flex-col items-center text-center p-2">
-                              <AchievementBadge type={badge.badge_type} size="md" earned={true} />
+                              <AchievementBadge type={badge.badge_type as BadgeType} size="md" earned={true} />
                               <h3 className="font-medium mt-2 text-sm">{badge.name}</h3>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.description}</p>
                             </div>
@@ -248,10 +270,10 @@ function UserDashboard() {
                     <TabsContent value="unearned">
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {allBadges
-                          .filter((badge) => !hasEarnedBadge(badge.badge_type))
+                          .filter((badge) => !hasEarnedBadge(badge.badge_type as BadgeType))
                           .map((badge) => (
                             <div key={badge.id} className="flex flex-col items-center text-center p-2">
-                              <AchievementBadge type={badge.badge_type} size="md" earned={false} />
+                              <AchievementBadge type={badge.badge_type as BadgeType} size="md" earned={false} />
                               <h3 className="font-medium mt-2 text-sm">{badge.name}</h3>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.description}</p>
                             </div>
@@ -264,9 +286,9 @@ function UserDashboard() {
                         {applicationBadges.map((badge) => (
                           <div key={badge.id} className="flex flex-col items-center text-center p-2">
                             <AchievementBadge
-                              type={badge.badge_type}
+                              type={badge.badge_type as BadgeType}
                               size="md"
-                              earned={hasEarnedBadge(badge.badge_type)}
+                              earned={hasEarnedBadge(badge.badge_type as BadgeType)}
                             />
                             <h3 className="font-medium mt-2 text-sm">{badge.name}</h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.description}</p>
@@ -280,9 +302,9 @@ function UserDashboard() {
                         {participationBadges.map((badge) => (
                           <div key={badge.id} className="flex flex-col items-center text-center p-2">
                             <AchievementBadge
-                              type={badge.badge_type}
+                              type={badge.badge_type as BadgeType}
                               size="md"
-                              earned={hasEarnedBadge(badge.badge_type)}
+                              earned={hasEarnedBadge(badge.badge_type as BadgeType)}
                             />
                             <h3 className="font-medium mt-2 text-sm">{badge.name}</h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{badge.description}</p>

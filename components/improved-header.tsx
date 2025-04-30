@@ -213,16 +213,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
             >
               Leaderboard
             </a>
-            <a
-              href="/dashboard"
-              onClick={(e) => {
-                e.preventDefault()
-                goToPage("/dashboard")
-              }}
-              className="text-white hover:text-[#FFD700] transition-colors"
-            >
-              Dashboard
-            </a>
+            {/* Removed Dashboard Link */}
           </nav>
 
           {/* Right side buttons */}
@@ -331,17 +322,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 >
                   Leaderboard
                 </a>
-                <a
-                  href="/dashboard"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setIsMenuOpen(false)
-                    goToPage("/dashboard")
-                  }}
-                  className="text-white hover:text-[#FFD700] py-2 transition-colors"
-                >
-                  Dashboard
-                </a>
+                {/* Removed Dashboard Link */}
 
                 {/* Social Media Links - Mobile Only */}
                 <div className="pt-2 border-t border-white/10">
