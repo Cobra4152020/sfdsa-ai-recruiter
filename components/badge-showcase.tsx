@@ -63,10 +63,12 @@ export function BadgeShowcase() {
   })
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border border-[#0A3C1F]/20 dark:border-[#FFD700]/20">
+      <CardHeader className="pb-2 bg-[#0A3C1F] text-white dark:bg-[#0A3C1F] dark:text-[#FFD700]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle>Achievement Badges</CardTitle>
+          <CardTitle className="flex items-center">
+            <span className="mr-2">🏅</span> Badge Legend
+          </CardTitle>
           <Tabs defaultValue="all" value={category} onValueChange={(value) => setCategory(value as any)}>
             <TabsList>
               <TabsTrigger value="all">All Badges</TabsTrigger>

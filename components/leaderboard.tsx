@@ -24,8 +24,13 @@ interface UserBadges {
 interface LeaderboardUser {
   id: string
   name: string
+  email?: string
+  phone?: string
   participationCount: number
   hasApplied: boolean
+  referralCount?: number
+  createdAt?: string
+  updatedAt?: string
   badges: UserBadges
 }
 
@@ -67,10 +72,12 @@ export function Leaderboard() {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border border-[#0A3C1F]/20 dark:border-[#FFD700]/20">
+      <CardHeader className="pb-2 bg-[#0A3C1F] text-white dark:bg-[#0A3C1F] dark:text-[#FFD700]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle>Leaderboard</CardTitle>
+          <CardTitle className="flex items-center">
+            <span className="mr-2">🏆</span> Engagement Champions
+          </CardTitle>
           <div className="flex flex-col sm:flex-row gap-2">
             <Tabs
               defaultValue="participation"
