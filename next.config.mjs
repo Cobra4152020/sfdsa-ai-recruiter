@@ -21,12 +21,35 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['fonts.googleapis.com', 'fonts.gstatic.com'],
+    domains: [
+      'fonts.googleapis.com', 
+      'fonts.gstatic.com',
+      'sfdeputysheriff.com'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'sfdeputysheriff.com',
+      },
+    ],
   },
   experimental: {
     serverActions: {},
   },
-  // Removed: excludeDefaultMomentLocales
+  // Add canonical URL to improve SEO
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 if (userConfig) {
