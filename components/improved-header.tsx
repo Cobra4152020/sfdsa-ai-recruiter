@@ -32,29 +32,37 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Effect to apply header height as CSS variable
+  // Effect to fix the header spacing issue
   useEffect(() => {
-    const updateHeaderHeight = () => {
-      if (headerRef.current) {
-        const height = headerRef.current.offsetHeight
-        document.documentElement.style.setProperty("--header-height", `${height}px`)
+    // Function to apply spacing after the header
+    const fixHeaderSpacing = () => {
+      if (!headerRef.current) return
 
-        // Apply margin to the main element
-        const mainElement = document.querySelector("main")
-        if (mainElement) {
-          mainElement.style.marginTop = `${height}px`
-        }
+      // Get the header height
+      const headerHeight = headerRef.current.offsetHeight
+
+      // Set a CSS variable for the header height
+      document.documentElement.style.setProperty("--header-height", `${headerHeight}px`)
+
+      // Find the main content element that comes after the header
+      const mainContent = document.querySelector("main")
+      if (mainContent) {
+        // Apply top margin to the main content equal to the header height
+        mainContent.style.marginTop = `${headerHeight}px`
       }
     }
 
-    // Update on mount, resize, and when menu opens/closes
-    updateHeaderHeight()
-    window.addEventListener("resize", updateHeaderHeight)
+    // Run on mount and when menu state changes
+    fixHeaderSpacing()
 
+    // Also run on window resize
+    window.addEventListener("resize", fixHeaderSpacing)
+
+    // Cleanup
     return () => {
-      window.removeEventListener("resize", updateHeaderHeight)
+      window.removeEventListener("resize", fixHeaderSpacing)
     }
-  }, [isMenuOpen]) // Re-run when menu state changes
+  }, [isMenuOpen]) // Re-run when menu opens/closes
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)

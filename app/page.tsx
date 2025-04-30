@@ -15,6 +15,9 @@ import { ImprovedFooter } from "@/components/improved-footer"
 import MainContent from "@/components/MainContent"
 // Import the entire module instead of just the function
 import * as aiService from "@/lib/ai-services"
+// Add this import at the top
+import { DebugUser } from "@/components/debug-user"
+import { HeaderSpacer } from "@/components/header-spacer"
 
 type MessageType = {
   role: "assistant" | "user"
@@ -150,7 +153,7 @@ function RecruitmentApp() {
   return (
     <div className="min-h-screen flex flex-col">
       <ImprovedHeader showOptInForm={() => showOptInForm(true)} />
-
+      <HeaderSpacer /> {/* Add this line right after the header */}
       <main className="flex-1">
         <HeroSection onGetStarted={startChat} showOptInForm={() => showOptInForm(true)} />
 
@@ -195,9 +198,7 @@ function RecruitmentApp() {
 
         <CTASection showOptInForm={() => showOptInForm(true)} />
       </main>
-
       <ImprovedFooter />
-
       {/* Opt-in form dialog */}
       <OptInForm
         isOpen={isOptInFormOpen}
@@ -207,6 +208,8 @@ function RecruitmentApp() {
         }}
         isApplying={isApplying}
       />
+      {/* Add this line to include the debug component */}
+      <DebugUser />
     </div>
   )
 }

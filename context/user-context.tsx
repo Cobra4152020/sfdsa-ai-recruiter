@@ -1,243 +1,100 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import type { UserData } from "@/lib/db-service"
+import type React from "react"
+import { createContext, useContext, useState, useEffect } from "react"
+
+interface User {
+  id: string
+  name: string
+  email: string
+  phone: string
+  isApplying?: boolean
+  createdAt?: string
+}
 
 interface UserContextType {
-  currentUser: UserData | null
-  setUserInfo: (name: string, email: string, phone: string, isApplying?: boolean) => Promise<UserData>
-  incrementParticipation: () => Promise<void>
-  markAsApplied: () => Promise<void>
-  incrementReferralCount: () => Promise<void>
+  currentUser: User | null
   isLoggedIn: boolean
   isInitialized: boolean
+  login: (userData: User) => void
+  logout: () => void
+  incrementParticipation: () => Promise<void>
+  setUserInfo: (name: string, email: string, phone: string, isApplying: boolean) => Promise<User | null>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-export function UserProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
-  // Add a flag to track if we've already redirected
-  const [hasRedirected, setHasRedirected] = useState(false)
-  // Add a flag to prevent multiple redirects
-  const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // Load user from localStorage on mount
+  // Check for existing user in localStorage on mount
   useEffect(() => {
-    const loadUserData = () => {
+    const storedUser = localStorage.getItem("currentUser")
+    if (storedUser) {
       try {
-        const savedUser = localStorage.getItem("currentUser")
-        if (savedUser) {
-          const user = JSON.parse(savedUser)
-          // Ensure user has at least 1 participation count
-          if (!user.participationCount || user.participationCount < 1) {
-            user.participationCount = 1
-          }
-          setCurrentUser(user)
-          setIsLoggedIn(true)
-        }
-      } catch (error) {
-        console.error("Error loading user data:", error)
+        setCurrentUser(JSON.parse(storedUser))
+      } catch (e) {
+        console.error("Failed to parse stored user", e)
+        localStorage.removeItem("currentUser")
       }
-      setIsInitialized(true)
     }
-
-    // Load immediately on mount
-    loadUserData()
-
-    // Also set up an event listener for storage changes (in case of multiple tabs)
-    window.addEventListener("storage", loadUserData)
-
-    return () => {
-      window.removeEventListener("storage", loadUserData)
-    }
+    setIsInitialized(true)
   }, [])
 
-  // Save user to localStorage whenever it changes
-  useEffect(() => {
-    if (currentUser) {
-      try {
-        localStorage.setItem("currentUser", JSON.stringify(currentUser))
-      } catch (error) {
-        console.error("Error saving user data:", error)
-      }
-    }
-  }, [currentUser])
+  const login = (userData: User) => {
+    setCurrentUser(userData)
+    localStorage.setItem("currentUser", JSON.stringify(userData))
+  }
 
-  // Set user info - now using the API route instead of direct DB access
-  const setUserInfo = async (name: string, email: string, phone: string, isApplying = false): Promise<UserData> => {
+  const logout = () => {
+    setCurrentUser(null)
+    localStorage.removeItem("currentUser")
+  }
+
+  // Function to set user info and login
+  const setUserInfo = async (name: string, email: string, phone: string, isApplying: boolean): Promise<User | null> => {
     try {
-      console.log("Starting user registration with API route:", { name, email, phone, isApplying })
+      // Generate a simple user ID
+      const userId = `user_${Date.now()}`
 
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          isApplying,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to register user")
+      // Create user object
+      const userData: User = {
+        id: userId,
+        name,
+        email,
+        phone,
+        isApplying,
+        createdAt: new Date().toISOString(),
       }
 
-      const data = await response.json()
-
-      if (!data.success || !data.user) {
-        throw new Error("Failed to register user")
-      }
-
-      // Ensure user has at least 1 participation count
-      const userData = {
-        ...data.user,
-        participationCount: Math.max(data.user.participationCount || 0, 1),
-      }
-
-      setCurrentUser(userData)
-      setIsLoggedIn(true)
-
-      // Set the redirect flag to prevent multiple redirects
-      setHasRedirected(true)
+      // Login the user (which sets the user in state and localStorage)
+      login(userData)
 
       return userData
     } catch (error) {
-      console.error("Error in setUserInfo:", error)
-      throw error
+      console.error("Error setting user info:", error)
+      return null
     }
   }
 
-  // Increment participation - this should also be moved to an API route
+  // Mock function for participation tracking
   const incrementParticipation = async () => {
-    if (currentUser) {
-      try {
-        const response = await fetch("/api/participation", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: currentUser.id,
-          }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success && data.user) {
-            setCurrentUser(data.user)
-          }
-        } else {
-          // If API call fails, still increment locally to ensure UI updates
-          setCurrentUser((prev) => {
-            if (!prev) return prev
-            const newCount = (prev.participationCount || 0) + 1
-            return {
-              ...prev,
-              participationCount: newCount,
-            }
-          })
-        }
-      } catch (error) {
-        console.error("Error incrementing participation:", error)
-        // Still increment locally on error
-        setCurrentUser((prev) => {
-          if (!prev) return prev
-          const newCount = (prev.participationCount || 0) + 1
-          return {
-            ...prev,
-            participationCount: newCount,
-          }
-        })
-      }
-    }
-  }
-
-  // Mark as applied - this should also be moved to an API route
-  const markAsApplied = async () => {
-    if (currentUser) {
-      try {
-        const response = await fetch("/api/apply", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: currentUser.id,
-          }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success && data.user) {
-            setCurrentUser(data.user)
-          }
-        } else {
-          // If API call fails, still update locally
-          setCurrentUser((prev) => {
-            if (!prev) return prev
-            return {
-              ...prev,
-              hasApplied: true,
-            }
-          })
-        }
-      } catch (error) {
-        console.error("Error marking as applied:", error)
-        // Still update locally on error
-        setCurrentUser((prev) => {
-          if (!prev) return prev
-          return {
-            ...prev,
-            hasApplied: true,
-          }
-        })
-      }
-    }
-  }
-
-  // Increment referral count - this should also be moved to an API route
-  const incrementReferralCount = async () => {
-    if (currentUser) {
-      try {
-        const response = await fetch("/api/referral", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: currentUser.id,
-          }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          if (data.success && data.user) {
-            setCurrentUser(data.user)
-          }
-        }
-      } catch (error) {
-        console.error("Error incrementing referral count:", error)
-      }
-    }
+    // In a real app, this would call an API
+    console.log("Participation incremented")
+    return Promise.resolve()
   }
 
   return (
     <UserContext.Provider
       value={{
         currentUser,
-        setUserInfo,
-        incrementParticipation,
-        markAsApplied,
-        incrementReferralCount,
-        isLoggedIn,
+        isLoggedIn: !!currentUser,
         isInitialized,
+        login,
+        logout,
+        incrementParticipation,
+        setUserInfo,
       }}
     >
       {children}

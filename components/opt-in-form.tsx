@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { X } from "lucide-react"
 import { useUser } from "@/context/user-context"
@@ -34,14 +33,15 @@ export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProp
     setError(null)
 
     try {
-      // Use the existing setUserInfo function from your context
-      await setUserInfo(fullName, email, phone, isApplying)
+      // Use the setUserInfo function from context
+      const result = await setUserInfo(fullName, email, phone, isApplying)
 
-      // Close the form on success
-      onClose()
-
-      // Force a small delay before continuing
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      if (result) {
+        // Close the form on success
+        onClose()
+      } else {
+        setError("Failed to register. Please try again.")
+      }
     } catch (error) {
       console.error("Error submitting form:", error)
       setError("Failed to register. Please try again.")
