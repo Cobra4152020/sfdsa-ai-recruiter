@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Menu, X, Shield, Sun, Moon, Home, BookOpen } from "lucide-react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
@@ -20,7 +20,9 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
   const { isLoggedIn } = useUser()
   const pathname = usePathname()
   const isHomePage = pathname === "/"
+  const headerRef = useRef<HTMLElement>(null)
 
+  // Effect to handle scroll events
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
@@ -29,6 +31,30 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  // Effect to apply header height as CSS variable
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.offsetHeight
+        document.documentElement.style.setProperty("--header-height", `${height}px`)
+
+        // Apply margin to the main element
+        const mainElement = document.querySelector("main")
+        if (mainElement) {
+          mainElement.style.marginTop = `${height}px`
+        }
+      }
+    }
+
+    // Update on mount, resize, and when menu opens/closes
+    updateHeaderHeight()
+    window.addEventListener("resize", updateHeaderHeight)
+
+    return () => {
+      window.removeEventListener("resize", updateHeaderHeight)
+    }
+  }, [isMenuOpen]) // Re-run when menu state changes
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -45,6 +71,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
 
   return (
     <header
+      ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-[#0A3C1F]/95 dark:bg-black/95 backdrop-blur-md py-2 shadow-lg"

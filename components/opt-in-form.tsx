@@ -2,260 +2,135 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { X } from "lucide-react"
 import { useUser } from "@/context/user-context"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { trapFocus } from "@/lib/accessibility"
 
 interface OptInFormProps {
   isOpen: boolean
   onClose: () => void
-  required?: boolean
-  pendingQuestion?: string | null
-  onQuestionProcess?: (question: string) => void
   isApplying?: boolean
 }
 
-export function OptInForm({
-  isOpen,
-  onClose,
-  required = false,
-  pendingQuestion = null,
-  onQuestionProcess,
-  isApplying = false,
-}: OptInFormProps) {
-  const { setUserInfo, isLoggedIn, markAsApplied } = useUser()
-
-  const [name, setName] = useState("")
+export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProps) {
+  const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
-  // Add a flag to track if we've already redirected
-  const [hasRedirected, setHasRedirected] = useState(false)
-  // Add a flag to prevent multiple redirects
-  const [isRedirecting, setIsRedirecting] = useState(false)
+  const { setUserInfo } = useUser()
 
-  // Check if the current page is the awards page
-  const isAwardsPage = typeof window !== "undefined" && window.location.pathname.includes("/awards")
-
-  // Only auto-redirect on non-awards pages when user is logged in and applying
-  useEffect(() => {
-    // Skip auto-redirect if we're on the awards page
-    if (isAwardsPage) {
-      return
-    }
-
-    if (isLoggedIn && isApplying && !hasRedirected) {
-      markAsApplied().then(() => {
-        // Set the redirect flag to prevent multiple redirects
-        setHasRedirected(true)
-        // Redirect to success page
-        if (!isRedirecting) {
-          setIsRedirecting(true)
-          window.location.href = `/success?action=apply`
-        }
-        onClose()
-      })
-    }
-  }, [isLoggedIn, isApplying, hasRedirected, markAsApplied, onClose, isRedirecting, isAwardsPage])
-
-  // Trap focus within the dialog when open
-  useEffect(() => {
-    if (isOpen) {
-      const dialogElement = document.querySelector('[role="dialog"]') as HTMLElement
-      if (dialogElement) {
-        const cleanup = trapFocus(dialogElement)
-        return cleanup
-      }
-    }
-  }, [isOpen])
-
-  // Don't show the form if the user is already logged in and it's not required or applying
-  if (isLoggedIn && !required && !isApplying) {
-    return null
-  }
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Simple validation
-    if (!name || !email) {
-      setError("Name and email are required")
-      return
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address")
+    if (!fullName.trim() || !email.trim() || !phone.trim()) {
+      setError("All fields are required")
       return
     }
 
     setIsSubmitting(true)
     setError(null)
 
-    console.log("Starting user registration with:", { name, email, phone, isApplying })
-
     try {
-      // Pass isApplying flag to the setUserInfo function
-      const result = await setUserInfo(name, email, phone, isApplying)
-      console.log("User registration result:", result)
+      // Use the existing setUserInfo function from your context
+      await setUserInfo(fullName, email, phone, isApplying)
 
-      if (isApplying) {
-        setSuccessMessage("Thank you for applying! You're being redirected to our application portal...")
-        setShowSuccess(true)
+      // Close the form on success
+      onClose()
 
-        // Redirect to success page after a short delay
-        setTimeout(() => {
-          if (!isRedirecting) {
-            setIsRedirecting(true)
-            window.location.href = `/success?action=apply`
-          }
-          onClose()
-        }, 2000)
-      } else {
-        setSuccessMessage("Thank you for signing up! We'll keep you updated on recruitment opportunities.")
-        setShowSuccess(true)
-
-        // Redirect to success page after a short delay
-        setTimeout(() => {
-          if (!isRedirecting) {
-            setIsRedirecting(true)
-            window.location.href = `/success?action=signup`
-          }
-          onClose()
-
-          // Process any pending question after successful sign-up
-          if (pendingQuestion && onQuestionProcess) {
-            onQuestionProcess(pendingQuestion)
-          }
-        }, 2000)
-      }
-    } catch (err) {
-      console.error("Detailed error in form submission:", err)
-      setError(`Failed to save your information: ${err instanceof Error ? err.message : "Unknown error"}`)
+      // Force a small delay before continuing
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      setError("Failed to register. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={required ? undefined : onClose}>
-      <DialogContent
-        className="sm:max-w-[425px] rounded-2xl border-border/40 bg-card/80 backdrop-blur-sm shadow-lg"
-        aria-labelledby="form-title"
-        aria-describedby="form-description"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        // Close when clicking outside the form
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        className="bg-white dark:bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-md w-full relative"
+        onClick={(e) => e.stopPropagation()}
       >
-        <DialogHeader>
-          <DialogTitle id="form-title" className="text-xl">
-            {isApplying ? "Start Your Application" : "Join Our Recruitment Program"}
-          </DialogTitle>
-          <DialogDescription id="form-description">
-            {isApplying
-              ? "Please enter your information to begin the application process for Deputy Sheriff."
-              : required
-                ? "Please enter your information to access the recruitment assistant."
-                : "Enter your information to get personalized updates about deputy sheriff positions."}
-          </DialogDescription>
-        </DialogHeader>
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          aria-label="Close form"
+        >
+          <X size={20} />
+        </button>
 
-        {showSuccess ? (
-          <div className="py-6 text-center" aria-live="polite">
-            <div className="text-[#0A3C1F] dark:text-[#FFD700] text-xl font-bold mb-2">
-              {isApplying ? "Thank you for applying!" : "Thank you for signing up!"}
-            </div>
-            <p className="text-[#0A3C1F]/70 dark:text-white/70">{successMessage}</p>
+        <h2 className="text-xl font-bold mb-4 text-center text-[#0A3C1F] dark:text-[#FFD700]">Chat with Sgt. Ken</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 text-center">SFSO Recruitment Assistant</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
+              required
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Full Name <span aria-hidden="true">*</span>
-                  <span className="sr-only">required</span>
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  aria-required="true"
-                  className="rounded-xl h-11"
-                  aria-invalid={error && !name ? "true" : "false"}
-                />
-              </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email <span aria-hidden="true">*</span>
-                  <span className="sr-only">required</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="john.doe@example.com"
-                  required
-                  aria-required="true"
-                  className="rounded-xl h-11"
-                  aria-invalid={error && !email ? "true" : "false"}
-                />
-              </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
+              required
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(123) 456-7890"
-                  className="rounded-xl h-11"
-                />
-              </div>
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
+              required
+            />
+          </div>
 
-              {error && (
-                <div className="text-destructive text-sm" role="alert" aria-live="assertive">
-                  {error}
-                </div>
-              )}
-            </div>
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
-            <DialogFooter>
-              {!required && !isApplying && (
-                <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">
-                  Cancel
-                </Button>
-              )}
-              <Button
-                type="submit"
-                className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-bold rounded-xl"
-                disabled={isSubmitting}
-                aria-busy={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : isApplying ? "Continue to Application" : "Save & Continue"}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 dark:bg-[#FFD700] dark:text-[#0A3C1F] dark:hover:bg-[#FFD700]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700]"
+          >
+            {isSubmitting ? "Processing..." : "Save & Continue"}
+          </button>
+        </form>
+
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+          Your information will be used only for recruitment purposes.
+        </p>
+      </div>
+    </div>
   )
 }
