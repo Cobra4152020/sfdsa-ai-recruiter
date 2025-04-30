@@ -34,7 +34,7 @@ const ChatMessage = memo(({ message, isLatest, displayedResponse, renderTextWith
       <div
         className={`rounded-lg p-3 ${
           isUser
-            ? "bg-[#E0D6B8] text-[#0A3C1F] dark:bg-[#D1C28F] dark:text-[#0A3C1F] ml-12 sm:ml-24 shadow-md"
+            ? "bg-[#F8F5EE] text-[#0A3C1F] dark:bg-[#F8F5EE] dark:text-[#0A3C1F] ml-12 sm:ml-24 shadow-md"
             : "assistant-message shadow-md"
         }`}
       >

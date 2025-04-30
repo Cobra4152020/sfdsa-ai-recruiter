@@ -43,6 +43,7 @@ function RecruitmentApp() {
   const [isApplying, setIsApplying] = useState(false)
   const [showChat, setShowChat] = useState(false)
   const chatSectionRef = useRef<HTMLElement>(null)
+  const inputBoxRef = useRef<HTMLDivElement>(null)
 
   const { incrementParticipation, isLoggedIn } = useUser()
 
@@ -102,7 +103,7 @@ function RecruitmentApp() {
         {
           role: "assistant",
           content:
-            "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
+            "I apologize, but I'm having trouble accessing that information right now. As a San Francisco Deputy Sheriff, I'd be happy to answer your questions when our system is back up. In the meantime, you can contact our recruitment team directly at (415) 554-7225.",
           quickReplies: ["Tell me about requirements", "What's the application process?", "How's the work schedule?"],
           id: `error-${Date.now()}`,
         },
@@ -145,6 +146,14 @@ function RecruitmentApp() {
           top: offsetPosition,
           behavior: "smooth",
         })
+
+        // Focus the input box after scrolling
+        setTimeout(() => {
+          const inputElement = document.getElementById("chat-input")
+          if (inputElement) {
+            inputElement.focus()
+          }
+        }, 500)
       }
     }, 300)
   }
@@ -168,10 +177,10 @@ function RecruitmentApp() {
         </section>
 
         {showChat && (
-          <section id="chat-section" ref={chatSectionRef} className="bg-[#F8F5EE] dark:bg-[#121212] py-16 scroll-mt-20">
+          <section id="chat-section" ref={chatSectionRef} className="bg-[#F8F5EE] dark:bg-[#121212] py-8 scroll-mt-20">
             <div className="container mx-auto px-4">
-              <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#0A3C1F] dark:text-[#FFD700]">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl md:text-4xl font-bold mb-2 text-[#0A3C1F] dark:text-[#FFD700]">
                   Chat with Sgt. Ken
                 </h2>
                 <p className="text-lg text-[#0A3C1F]/70 dark:text-white/70 max-w-2xl mx-auto">
@@ -181,7 +190,7 @@ function RecruitmentApp() {
               </div>
 
               <div className="max-w-4xl mx-auto bg-white dark:bg-[#1E1E1E] rounded-xl shadow-xl overflow-hidden border border-[#E0D6B8] dark:border-[#333333]">
-                <div className="h-[500px] flex flex-col">
+                <div className="h-[350px] flex flex-col" ref={inputBoxRef}>
                   <MainContent
                     messages={messages}
                     onSendMessage={handleUserMessage}

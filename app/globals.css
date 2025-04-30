@@ -20,6 +20,7 @@
   --input: 209, 194, 143; /* Light gold */
   --ring: 10, 60, 31; /* Dark green */
   --header-height: 0px; /* This will be set dynamically by the header component */
+  --page-bg: #f8f5ee; /* Page background color */
 }
 
 .dark {
@@ -39,6 +40,7 @@
   --border: 68, 68, 68;
   --input: 68, 68, 68;
   --ring: 255, 215, 0; /* Gold */
+  --page-bg: #121212; /* Dark mode page background color */
 }
 
 @layer base {
@@ -61,7 +63,7 @@
   }
 
   .user-message {
-    @apply bg-[#E0D6B8] text-[#0A3C1F] dark:bg-[#D1C28F] dark:text-[#0A3C1F];
+    @apply bg-[#F8F5EE] text-[#0A3C1F] dark:bg-[#F8F5EE] dark:text-[#0A3C1F];
   }
 
   .assistant-message {
