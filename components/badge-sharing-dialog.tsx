@@ -8,7 +8,7 @@ import { AchievementBadge } from "./achievement-badge"
 import { RecruitmentBadge } from "./recruitment-badge"
 import { Copy, Check, Download } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-// Update the import for QRCode
+// Fix QRCode import
 import { QRCodeSVG } from "qrcode.react"
 
 type BadgeType =

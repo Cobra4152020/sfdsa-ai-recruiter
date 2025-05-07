@@ -5,7 +5,7 @@ import { EnhancementTracker } from "@/components/engagement-tracker"
 import { BadgeDisplay } from "@/components/badge-display"
 import { PointSystemExplanation } from "@/components/point-system-explanation"
 import { ErrorBoundary } from "@/components/error-boundary"
-import LayoutWithNavigation from "../layout-with-navigation"
+import { PageWrapper } from "@/components/page-wrapper"
 
 export const metadata = {
   title: "Top Recruit Awards | SF Deputy Sheriff Recruitment",
@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function AwardsPage() {
   return (
-    <LayoutWithNavigation>
+    <PageWrapper>
       <div className="container mx-auto px-4 pt-8 pb-16">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-4 text-primary dark:text-primary-light">Top Recruit Awards</h1>
@@ -80,6 +80,6 @@ export default function AwardsPage() {
           </Tabs>
         </div>
       </div>
-    </LayoutWithNavigation>
+    </PageWrapper>
   )
 }
