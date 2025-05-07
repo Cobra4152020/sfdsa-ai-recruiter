@@ -23,14 +23,8 @@ export function getServiceSupabase() {
   })
 }
 
-// Fixed the syntax error by removing the backslash
-export const withRetry = async <T>(\
-  fn: () => Promise<T>,
-  maxRetries = 3,
-  delay = 1000
-)
-: Promise<T> =>
-{
+// Completely rewritten without any backslashes
+export async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3, delay = 1000): Promise<T> {
   let lastError: any
 
   for (let i = 0; i < maxRetries; i++) {
