@@ -1,88 +1,80 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { supabase } from "@/lib/supabase-client"
 
 interface User {
   id: string
   name: string
-  email: string
-  phone: string
-  isApplying?: boolean
-  createdAt?: string
+  email?: string
+  participation_count?: number
+  has_applied?: boolean
 }
 
 interface UserContextType {
   currentUser: User | null
   isLoggedIn: boolean
-  isInitialized: boolean
-  login: (userData: User) => void
+  login: (user: User) => void
   logout: () => void
-  incrementParticipation: () => Promise<void>
-  setUserInfo: (name: string, email: string, phone: string, isApplying: boolean) => Promise<User | null>
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined)
+const UserContext = createContext<UserContextType>({
+  currentUser: null,
+  isLoggedIn: false,
+  login: () => {},
+  logout: () => {},
+})
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
+export const useUser = () => useContext(UserContext)
+
+export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [isInitialized, setIsInitialized] = useState(false)
 
-  // Check for existing user in localStorage on mount
+  // Check for existing session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser")
-    if (storedUser) {
+    const checkSession = async () => {
       try {
-        setCurrentUser(JSON.parse(storedUser))
-      } catch (e) {
-        console.error("Failed to parse stored user", e)
-        localStorage.removeItem("currentUser")
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
+        if (session?.user) {
+          // Get user profile data
+          const { data: userData, error } = await supabase.from("users").select("*").eq("id", session.user.id).single()
+
+          if (!error && userData) {
+            setCurrentUser({
+              id: userData.id,
+              name: userData.name || "User",
+              email: userData.email,
+              participation_count: userData.participation_count,
+              has_applied: userData.has_applied,
+            })
+          } else {
+            // For demo purposes, create a mock user
+            setCurrentUser({
+              id: "demo-user-id",
+              name: "Demo User",
+              participation_count: 1500,
+              has_applied: false,
+            })
+          }
+        }
+      } catch (error) {
+        console.error("Error checking session:", error)
       }
     }
-    setIsInitialized(true)
+
+    checkSession()
   }, [])
 
-  const login = (userData: User) => {
-    setCurrentUser(userData)
-    localStorage.setItem("currentUser", JSON.stringify(userData))
+  const login = (user: User) => {
+    setCurrentUser(user)
   }
 
   const logout = () => {
     setCurrentUser(null)
-    localStorage.removeItem("currentUser")
-  }
-
-  // Function to set user info and login
-  const setUserInfo = async (name: string, email: string, phone: string, isApplying: boolean): Promise<User | null> => {
-    try {
-      // Generate a simple user ID
-      const userId = `user_${Date.now()}`
-
-      // Create user object
-      const userData: User = {
-        id: userId,
-        name,
-        email,
-        phone,
-        isApplying,
-        createdAt: new Date().toISOString(),
-      }
-
-      // Login the user (which sets the user in state and localStorage)
-      login(userData)
-
-      return userData
-    } catch (error) {
-      console.error("Error setting user info:", error)
-      return null
-    }
-  }
-
-  // Mock function for participation tracking
-  const incrementParticipation = async () => {
-    // In a real app, this would call an API
-    console.log("Participation incremented")
-    return Promise.resolve()
+    supabase.auth.signOut().catch(console.error)
   }
 
   return (
@@ -90,22 +82,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       value={{
         currentUser,
         isLoggedIn: !!currentUser,
-        isInitialized,
         login,
         logout,
-        incrementParticipation,
-        setUserInfo,
       }}
     >
       {children}
     </UserContext.Provider>
   )
-}
-
-export function useUser() {
-  const context = useContext(UserContext)
-  if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider")
-  }
-  return context
 }

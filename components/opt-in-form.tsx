@@ -1,136 +1,198 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
-import { X } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 import { useUser } from "@/context/user-context"
 
 interface OptInFormProps {
   isOpen: boolean
   onClose: () => void
   isApplying?: boolean
+  returnUrl?: string
 }
 
-export function OptInForm({ isOpen, onClose, isApplying = false }: OptInFormProps) {
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { setUserInfo } = useUser()
+export function OptInForm({ isOpen, onClose, isApplying = false, returnUrl = "/awards" }: OptInFormProps) {
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("signup")
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    agreeTerms: false,
+  })
+  const { toast } = useToast()
+  const router = useRouter()
+  const { login } = useUser()
 
-  if (!isOpen) return null
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!fullName.trim() || !email.trim() || !phone.trim()) {
-      setError("All fields are required")
-      return
-    }
-
-    setIsSubmitting(true)
-    setError(null)
+    setIsLoading(true)
 
     try {
-      // Use the setUserInfo function from context
-      const result = await setUserInfo(fullName, email, phone, isApplying)
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      if (result) {
-        // Close the form on success
-        onClose()
-      } else {
-        setError("Failed to register. Please try again.")
+      // Create mock user
+      const mockUser = {
+        id: `user-${Date.now()}`,
+        name: formData.name || "Demo User",
+        email: formData.email,
+        participation_count: 0,
+        has_applied: isApplying,
+      }
+
+      // Log the user in
+      login(mockUser)
+
+      toast({
+        title: activeTab === "signup" ? "Account created!" : "Welcome back!",
+        description: isApplying
+          ? "Your application process has been started."
+          : "You can now track your progress and earn badges.",
+      })
+
+      onClose()
+
+      // Navigate to return URL if provided
+      if (returnUrl) {
+        router.push(returnUrl)
       }
     } catch (error) {
-      console.error("Error submitting form:", error)
-      setError("Failed to register. Please try again.")
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setIsSubmitting(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => {
-        // Close when clicking outside the form
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div
-        className="bg-white dark:bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-md w-full relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          aria-label="Close form"
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isApplying ? "Start Your Application" : "Join Our Community"}</DialogTitle>
+          <DialogDescription>
+            {isApplying
+              ? "Create an account to start your application process and track your progress."
+              : "Sign up to track your engagement, earn badges, and compete on the leaderboard."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <Tabs
+          defaultValue={activeTab}
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as "login" | "signup")}
         >
-          <X size={20} />
-        </button>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="login">Log In</TabsTrigger>
+          </TabsList>
 
-        <h2 className="text-xl font-bold mb-4 text-center text-[#0A3C1F] dark:text-[#FFD700]">Chat with Sgt. Ken</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 text-center">SFSO Recruitment Assistant</p>
+          <TabsContent value="signup">
+            <form onSubmit={handleSubmit} className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="agreeTerms"
+                  name="agreeTerms"
+                  checked={formData.agreeTerms}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, agreeTerms: checked as boolean }))}
+                  required
+                />
+                <Label htmlFor="agreeTerms" className="text-sm">
+                  I agree to the Terms of Service and Privacy Policy
+                </Label>
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : isApplying ? "Start Application" : "Create Account"}
+              </Button>
+            </form>
+          </TabsContent>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700] focus:border-[#0A3C1F] dark:focus:border-[#FFD700] bg-white dark:bg-[#333333] text-gray-900 dark:text-white"
-              required
-            />
-          </div>
-
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0A3C1F] hover:bg-[#0A3C1F]/90 dark:bg-[#FFD700] dark:text-[#0A3C1F] dark:hover:bg-[#FFD700]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0A3C1F] dark:focus:ring-[#FFD700]"
-          >
-            {isSubmitting ? "Processing..." : "Save & Continue"}
-          </button>
-        </form>
-
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-          Your information will be used only for recruitment purposes.
-        </p>
-      </div>
-    </div>
+          <TabsContent value="login">
+            <form onSubmit={handleSubmit} className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="login-email">Email</Label>
+                <Input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="login-password">Password</Label>
+                <Input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Logging In..." : "Log In"}
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
   )
 }

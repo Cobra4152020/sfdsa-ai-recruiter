@@ -1,80 +1,156 @@
 "use client"
 
-import { useState } from "react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { useUser } from "@/context/user-context"
-import { LogOut, LayoutDashboard, Award } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Trophy, Medal, Share2, ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { BadgeSharingDialog } from "./badge-sharing-dialog"
 
-export function UserProfile() {
-  const { currentUser } = useUser()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+interface UserProfileProps {
+  userId: string
+  showDetails?: boolean
+}
 
-  const handleLogout = () => {
-    setIsLoggingOut(true)
-    localStorage.removeItem("currentUser")
-    window.location.href = "/"
+interface UserData {
+  id: string
+  name: string
+  email: string
+  avatar_url?: string
+  points: number
+  rank: number
+  badges: number
+  level: string
+  joined_at: string
+}
+
+export function UserProfile({ userId, showDetails = true }: UserProfileProps) {
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(`/api/users/${userId}/profile`)
+        const data = await response.json()
+
+        if (data.success && data.profile) {
+          setUserData(data.profile)
+        } else {
+          setError(data.message || "Failed to load user profile")
+        }
+      } catch (err) {
+        setError("An error occurred while fetching user data")
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (userId) {
+      fetchUserData()
+    }
+  }, [userId])
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
-  const navigateTo = (path: string) => {
-    window.location.href = path
+  if (error || !userData) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center py-4">
+            <p className="text-red-500">{error || "User not found"}</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
-  // Get initials for the avatar fallback
-  const getInitials = () => {
-    if (!currentUser?.name) return "U"
-    return currentUser.name
+  const getInitials = (name: string) => {
+    return name
       .split(" ")
-      .map((part) => part[0])
+      .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2)
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(date)
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none">
-        <Avatar className="bg-[#FFD700] text-[#0A3C1F] border-2 border-white">
-          <AvatarFallback>{getInitials()}</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
-        align="end"
-        forceMount
-      >
-        <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1 leading-none">
-            <span>{currentUser?.name}</span>
-            <span className="text-sm text-muted-foreground">{currentUser?.email}</span>
+    <>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary">
+              <AvatarImage src={userData.avatar_url || "/placeholder.svg"} alt={userData.name} />
+              <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>
+            </Avatar>
+
+            <div className="flex-1 text-center sm:text-left">
+              <h2 className="text-xl font-bold">{userData.name}</h2>
+              <p className="text-muted-foreground text-sm mb-2">Joined {formatDate(userData.joined_at)}</p>
+
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-4">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Trophy className="h-3 w-3" />
+                  Rank #{userData.rank}
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Medal className="h-3 w-3" />
+                  {userData.badges} Badges
+                </Badge>
+                <Badge className="bg-[#0A3C1F] text-white">{userData.level}</Badge>
+              </div>
+
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setIsShareDialogOpen(true)}>
+                  <Share2 className="h-3 w-3 mr-1" />
+                  Share Profile
+                </Button>
+
+                {showDetails && (
+                  <Link href={`/profile/${userId}`}>
+                    <Button variant="default" size="sm" className="text-xs h-8">
+                      View Full Profile
+                      <ChevronRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigateTo("/dashboard")} className="cursor-pointer">
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          <span>Dashboard</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigateTo("/awards")} className="cursor-pointer">
-          <Award className="mr-2 h-4 w-4" />
-          <span>Top Recruit Awards</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="cursor-pointer text-red-500 focus:text-red-500"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </CardContent>
+      </Card>
+
+      <BadgeSharingDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        badges={[]}
+        userName={userData.name}
+      />
+    </>
   )
 }
