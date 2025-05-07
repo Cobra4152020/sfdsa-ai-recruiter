@@ -30,7 +30,7 @@ function getDocumentsDir(): string {
 }
 
 // Check if a PDF exists
-export async function pdfExists(filename: string): Promise<boolean> {
+export async function pdfExists(fileid: string): Promise<boolean> {
   try {
     const filePath = path.join(getDocumentsDir(), filename)
     return fs.existsSync(filePath)
@@ -84,7 +84,7 @@ export async function listAvailablePDFs(): Promise<string[]> {
 }
 
 // Get content from a PDF with persistent caching
-export async function getPDFContent(filename: string): Promise<string> {
+export async function getPDFContent(fileid: string): Promise<string> {
   try {
     // First, check if content is cached in Supabase
     const cachedContent = await getPDFContentFromCache(filename)
@@ -133,7 +133,7 @@ export async function getPDFContent(filename: string): Promise<string> {
 }
 
 // Cache PDF content in Supabase
-async function cachePDFContent(filename: string, content: string): Promise<void> {
+async function cachePDFContent(fileid: string, content: string): Promise<void> {
   try {
     const supabase = getServiceSupabase()
 
@@ -166,7 +166,7 @@ async function cachePDFContent(filename: string, content: string): Promise<void>
 }
 
 // Get cached PDF content from Supabase
-async function getPDFContentFromCache(filename: string): Promise<string | null> {
+async function getPDFContentFromCache(fileid: string): Promise<string | null> {
   try {
     const supabase = getServiceSupabase()
 
@@ -212,7 +212,7 @@ async function getPDFContentFromCache(filename: string): Promise<string | null> 
 }
 
 // Get PDF metadata
-export async function getPDFMetadata(filename: string): Promise<{
+export async function getPDFMetadata(fileid: string): Promise<{
   pageCount: number
   info?: Record<string, any>
   metadata?: Record<string, any>

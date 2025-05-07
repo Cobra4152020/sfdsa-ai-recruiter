@@ -10,14 +10,14 @@ import { assignBadgeToUser } from "@/lib/badge-utils"
 
 interface Badge {
   id: string
-  badge_type: string
-  name: string
+  badge_id: string
+  id: string
   description: string
 }
 
 interface User {
   id: string
-  name: string
+  id: string
   email: string
 }
 

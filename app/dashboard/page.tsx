@@ -19,7 +19,7 @@ import type { BadgeType } from "@/app/api/leaderboard/route"
 interface Badge {
   id: string
   badge_type: BadgeType
-  name: string
+  id: string
   description: string
   created_at: string
 }

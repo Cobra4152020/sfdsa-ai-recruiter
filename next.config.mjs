@@ -1,4 +1,3 @@
-/** @type {import('next').NextConfig} */
 let userConfig = undefined;
 
 try {
@@ -35,6 +34,10 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {},
+    // Add typedRoutes to help with dynamic route conflicts
+    typedRoutes: true,
+    // This might help with dynamic route parameter conflicts
+    allowedRevalidateHeaderKeys: ['x-prerender-revalidate'],
   },
   // Add canonical URL to improve SEO
   async headers() {
@@ -49,6 +52,14 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  // This might help with dynamic route conflicts by disabling strict mode for routes
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [],
+    };
   },
 };
 

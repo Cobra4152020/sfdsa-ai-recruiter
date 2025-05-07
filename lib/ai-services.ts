@@ -95,7 +95,7 @@ async function findRelevantPDF(question: string): Promise<string | null> {
 }
 
 // Function to query OpenAI with PDF content
-async function queryOpenAIWithPDF(question: string, pdfFilename: string) {
+async function queryOpenAIWithPDF(question: string, pdfFileid: string) {
   try {
     // Get PDF content using our improved service
     const pdfContent = await getPDFContent(pdfFilename)

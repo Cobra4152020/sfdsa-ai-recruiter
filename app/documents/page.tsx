@@ -39,7 +39,7 @@ export default function DocumentsPage() {
   }, [])
 
   // Format document name for display
-  const formatDocumentName = (filename: string) => {
+  const formatDocumentName = (fileid: string) => {
     return filename
       .replace(".pdf", "")
       .split("-")

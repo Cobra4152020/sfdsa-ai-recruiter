@@ -42,7 +42,7 @@ async function backupDatabase() {
 
     // Run pg_dump command
     const { stdout, stderr } = await execAsync(
-      `pg_dump -h ${host} -p ${port} -U ${username} -d ${database} -f ${backupFile}`,
+      `pg_dump -h ${host} -p ${port} -U ${ id } -d ${database} -f ${backupFile}`,
       { env },
     )
 

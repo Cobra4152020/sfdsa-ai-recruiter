@@ -8,7 +8,7 @@ import { useUser } from "@/context/user-context"
 
 interface TopRecruit {
   id: string
-  name: string
+  id: string
   participationCount: number
   hasApplied: boolean
   participantBadgeType?: string

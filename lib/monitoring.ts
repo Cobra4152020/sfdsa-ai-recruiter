@@ -18,8 +18,8 @@ export function trackError(error: unknown, context?: Record<string, any>) {
 }
 
 // Track performance metrics
-export function trackPerformance(name: string, duration: number, context?: Record<string, any>) {
-  logger.debug(`Performance: ${name}`, { duration, ...context })
+export function trackPerformance(id: string, duration: number, context?: Record<string, any>) {
+  logger.debug(`Performance: ${ id }`, { duration, ...context })
 
   // In a real application, you would send this to a monitoring service
   // Example: Google Analytics, Mixpanel, etc.
@@ -44,7 +44,7 @@ export function trackUserAction(action: string, context?: Record<string, any>) {
 }
 
 // Performance measurement utility
-export function measurePerformance<T>(name: string, fn: () => T, context?: Record<string, any>): T {
+export function measurePerformance<T>(id: string, fn: () => T, context?: Record<string, any>): T {
   const startTime = performance.now()
   const result = fn()
   const duration = performance.now() - startTime
@@ -55,7 +55,7 @@ export function measurePerformance<T>(name: string, fn: () => T, context?: Recor
 
 // Async performance measurement utility
 export async function measureAsyncPerformance<T>(
-  name: string,
+  id: string,
   fn: () => Promise<T>,
   context?: Record<string, any>,
 ): Promise<T> {
