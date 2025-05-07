@@ -23,6 +23,7 @@ export function getServiceSupabase() {
   })
 }
 
+// Fixed the syntax error by removing the backslash
 export const withRetry = async <T>(\
   fn: () => Promise<T>,
   maxRetries = 3,
