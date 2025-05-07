@@ -10,92 +10,39 @@ interface BadgeEarnedTemplateProps {
     recipientName,
     badgeName,
     badgeDescription,
-    badgeShareMessage,
+    badgeShareMessage = "Check out my new badge!",
     badgeUrl,
   }: BadgeEarnedTemplateProps): string {
     return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>You've Earned a Badge!</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-          }
-          .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          .header {
-            background-color: #003366;
-            color: white;
-            padding: 20px;
-            text-align: center;
-          }
-          .content {
-            padding: 20px;
-            background-color: #f9f9f9;
-          }
-          .badge-info {
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-          }
-          .button {
-            display: inline-block;
-            background-color: #003366;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            margin-top: 20px;
-          }
-          .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #666;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Congratulations, ${recipientName}!</h1>
-          </div>
-          <div class="content">
-            <p>You've earned the <strong>${badgeName}</strong> badge in your journey to become a San Francisco Deputy Sheriff!</p>
-            
-            <div class="badge-info">
-              <h2>${badgeName}</h2>
-              <p>${badgeDescription}</p>
-              ${badgeShareMessage ? `<p><em>${badgeShareMessage}</em></p>` : ""}
-            </div>
-            
-            <p>This badge recognizes your progress and commitment to the recruitment process. Keep up the great work!</p>
-            
-            <p>
-              <a href="${badgeUrl}" class="button">View Your Badge</a>
-            </p>
-            
-            <p>If you have any questions about your recruitment journey, please don't hesitate to contact us.</p>
-          </div>
-          <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} San Francisco Sheriff's Department. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <div style="background-color: #0A3C1F; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+          <h1 style="color: white; margin: 0;">Congratulations, ${recipientName}!</h1>
         </div>
-      </body>
-      </html>
+        
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; line-height: 1.5;">You've earned the <strong>${badgeName}</strong> badge!</p>
+          
+          <p style="font-size: 16px; line-height: 1.5;">${badgeDescription}</p>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="font-size: 16px; margin: 0 0 10px 0;"><strong>Share your achievement:</strong></p>
+            <p style="font-size: 16px; margin: 0; font-style: italic;">"${badgeShareMessage}"</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${badgeUrl}" style="background-color: #0A3C1F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Your Badge</a>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.5;">Keep up the great work!</p>
+          
+          <p style="font-size: 16px; line-height: 1.5;">Regards,<br>SF Deputy Sheriff Recruitment Team</p>
+        </div>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px;">
+          <p>This is an automated message. Please do not reply to this email.</p>
+          <p>© ${new Date().getFullYear()} San Francisco Deputy Sheriff's Association. All rights reserved.</p>
+        </div>
+      </div>
     `
   }
   

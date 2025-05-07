@@ -14,95 +14,36 @@ interface NFTAwardedTemplateProps {
     nftViewUrl,
   }: NFTAwardedTemplateProps): string {
     return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>You've Been Awarded an NFT!</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-          }
-          .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          .header {
-            background-color: #003366;
-            color: white;
-            padding: 20px;
-            text-align: center;
-          }
-          .content {
-            padding: 20px;
-            background-color: #f9f9f9;
-          }
-          .nft-info {
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-          }
-          .nft-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            margin: 10px 0;
-          }
-          .button {
-            display: inline-block;
-            background-color: #003366;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            margin-top: 20px;
-          }
-          .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #666;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Congratulations, ${recipientName}!</h1>
-          </div>
-          <div class="content">
-            <p>You've been awarded a special NFT: <strong>${nftName}</strong>!</p>
-            
-            <div class="nft-info">
-              <h2>${nftName}</h2>
-              <img src="${nftImageUrl}" alt="${nftName}" class="nft-image">
-              <p>${nftDescription}</p>
-            </div>
-            
-            <p>This NFT is a unique digital asset that recognizes your exceptional achievement in the San Francisco Deputy Sheriff recruitment process.</p>
-            
-            <p>
-              <a href="${nftViewUrl}" class="button">View Your NFT</a>
-            </p>
-            
-            <p>If you have any questions about your NFT or the recruitment process, please don't hesitate to contact us.</p>
-          </div>
-          <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} San Francisco Sheriff's Department. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <div style="background-color: #0A3C1F; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+          <h1 style="color: white; margin: 0;">NFT Award Notification</h1>
         </div>
-      </body>
-      </html>
+        
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; line-height: 1.5;">Congratulations, ${recipientName}!</p>
+          
+          <p style="font-size: 16px; line-height: 1.5;">You've been awarded the <strong>${nftName}</strong> NFT!</p>
+          
+          <p style="font-size: 16px; line-height: 1.5;">${nftDescription}</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <img src="${nftImageUrl}" alt="${nftName}" style="max-width: 100%; height: auto; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" />
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${nftViewUrl}" style="background-color: #0A3C1F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Your NFT</a>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.5;">This NFT is a unique digital asset that recognizes your achievements in the recruitment process.</p>
+          
+          <p style="font-size: 16px; line-height: 1.5;">Regards,<br>SF Deputy Sheriff Recruitment Team</p>
+        </div>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px;">
+          <p>This is an automated message. Please do not reply to this email.</p>
+          <p>© ${new Date().getFullYear()} San Francisco Deputy Sheriff's Association. All rights reserved.</p>
+        </div>
+      </div>
     `
   }
   
