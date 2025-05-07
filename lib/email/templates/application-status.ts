@@ -11,48 +11,107 @@ interface ApplicationStatusTemplateProps {
     nextSteps,
     dashboardUrl,
   }: ApplicationStatusTemplateProps): string {
-    const nextStepsHtml = nextSteps.length
-      ? `
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-          <p style="font-size: 16px; margin: 0 0 10px 0;"><strong>Next Steps:</strong></p>
-          <ul style="margin: 0; padding-left: 20px;">
-            ${nextSteps.map((step) => `<li style="font-size: 16px; margin-bottom: 5px;">${step}</li>`).join("")}
-          </ul>
-        </div>
-      `
-      : ""
-  
     return `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <div style="background-color: #0A3C1F; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
-          <h1 style="color: white; margin: 0;">Application Status Update</h1>
-        </div>
-        
-        <div style="padding: 20px;">
-          <p style="font-size: 16px; line-height: 1.5;">Hello ${recipientName},</p>
-          
-          <p style="font-size: 16px; line-height: 1.5;">We have an update regarding your application to the San Francisco Deputy Sheriff's Department:</p>
-          
-          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p style="font-size: 16px; margin: 0;"><strong>Status Update:</strong> ${statusUpdate}</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Application Status Update</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background-color: #0A3C1F;
+            color: white;
+            padding: 20px;
+            text-align: center;
+          }
+          .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          .status-update {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          .next-steps {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          .button {
+            display: inline-block;
+            background-color: #FFD700;
+            color: #0A3C1F;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-weight: bold;
+          }
+          .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Application Status Update</h1>
           </div>
-          
-          ${nextStepsHtml}
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${dashboardUrl}" style="background-color: #0A3C1F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Application Status</a>
+          <div class="content">
+            <p>Hello ${recipientName},</p>
+            
+            <div class="status-update">
+              <h2>Your Current Status:</h2>
+              <p>${statusUpdate}</p>
+            </div>
+            
+            ${
+              nextSteps.length > 0
+                ? `
+            <div class="next-steps">
+              <h2>Next Steps:</h2>
+              <ul>
+                ${nextSteps.map((step) => `<li>${step}</li>`).join("")}
+              </ul>
+            </div>
+            `
+                : ""
+            }
+            
+            <p>
+              <a href="${dashboardUrl}" class="button">View Your Dashboard</a>
+            </p>
+            
+            <p>If you have any questions about your application status, please contact our recruitment team.</p>
           </div>
-          
-          <p style="font-size: 16px; line-height: 1.5;">If you have any questions, please contact our recruitment team.</p>
-          
-          <p style="font-size: 16px; line-height: 1.5;">Best regards,<br>SF Deputy Sheriff Recruitment Team</p>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} San Francisco Sheriff's Department. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+          </div>
         </div>
-        
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px;">
-          <p>This is an automated message. Please do not reply to this email.</p>
-          <p>© ${new Date().getFullYear()} San Francisco Deputy Sheriff's Association. All rights reserved.</p>
-        </div>
-      </div>
+      </body>
+      </html>
     `
   }
   

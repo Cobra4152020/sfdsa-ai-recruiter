@@ -5,39 +5,93 @@ interface WelcomeTemplateProps {
   
   export function welcome({ recipientName, dashboardUrl }: WelcomeTemplateProps): string {
     return `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <div style="background-color: #0A3C1F; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
-          <h1 style="color: white; margin: 0;">Welcome to SF Deputy Sheriff Recruitment!</h1>
-        </div>
-        
-        <div style="padding: 20px;">
-          <p style="font-size: 16px; line-height: 1.5;">Hello ${recipientName},</p>
-          
-          <p style="font-size: 16px; line-height: 1.5;">Thank you for joining the San Francisco Deputy Sheriff recruitment platform. We're excited to have you on board!</p>
-          
-          <p style="font-size: 16px; line-height: 1.5;">Our platform is designed to help you navigate the recruitment process with ease. Here's what you can do:</p>
-          
-          <ul style="font-size: 16px; line-height: 1.5;">
-            <li>Track your application progress</li>
-            <li>Earn badges for completing various steps</li>
-            <li>Access resources to help you prepare</li>
-            <li>Connect with recruitment officers</li>
-          </ul>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${dashboardUrl}" style="background-color: #0A3C1F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Visit Your Dashboard</a>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to SF Deputy Sheriff Recruitment</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background-color: #0A3C1F;
+            color: white;
+            padding: 20px;
+            text-align: center;
+          }
+          .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          .steps {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          }
+          .button {
+            display: inline-block;
+            background-color: #FFD700;
+            color: #0A3C1F;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-weight: bold;
+          }
+          .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome, ${recipientName}!</h1>
           </div>
-          
-          <p style="font-size: 16px; line-height: 1.5;">If you have any questions, please don't hesitate to reach out to our recruitment team.</p>
-          
-          <p style="font-size: 16px; line-height: 1.5;">Best regards,<br>SF Deputy Sheriff Recruitment Team</p>
+          <div class="content">
+            <p>Thank you for your interest in becoming a San Francisco Deputy Sheriff. We're excited to have you begin this journey!</p>
+            
+            <div class="steps">
+              <h2>Next Steps:</h2>
+              <ol>
+                <li>Complete your profile information</li>
+                <li>Explore the available resources and preparation materials</li>
+                <li>Track your progress through the recruitment process</li>
+                <li>Earn badges as you complete different stages</li>
+              </ol>
+            </div>
+            
+            <p>Our recruitment platform is designed to guide you through each step of the process and help you prepare for a successful career in law enforcement.</p>
+            
+            <p>
+              <a href="${dashboardUrl}" class="button">Go to Your Dashboard</a>
+            </p>
+            
+            <p>If you have any questions, please don't hesitate to contact our recruitment team.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} San Francisco Sheriff's Department. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+          </div>
         </div>
-        
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px;">
-          <p>This is an automated message. Please do not reply to this email.</p>
-          <p>© ${new Date().getFullYear()} San Francisco Deputy Sheriff's Association. All rights reserved.</p>
-        </div>
-      </div>
+      </body>
+      </html>
     `
   }
   
