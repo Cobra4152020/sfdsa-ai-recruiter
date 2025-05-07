@@ -1,28 +1,36 @@
 "use client"
 
-import { useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { Component, type ErrorInfo, type ReactNode } from "react"
 
 interface ErrorBoundaryProps {
-  error: Error & { digest?: string }
-  reset: () => void
+  fallback: ReactNode
+  children: ReactNode
 }
 
-export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error("Error boundary caught error:", error)
-  }, [error])
+interface ErrorBoundaryState {
+  hasError: boolean
+  error?: Error
+}
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
-      <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
-      <p className="mb-6 text-gray-600 dark:text-gray-400 max-w-md">
-        We apologize for the inconvenience. Our team has been notified of this issue.
-      </p>
-      <Button onClick={reset} variant="default">
-        Try again
-      </Button>
-    </div>
-  )
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error("ErrorBoundary caught an error:", error, errorInfo)
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+
+    return this.props.children
+  }
 }

@@ -9,7 +9,7 @@ import { useUser } from "@/context/user-context"
 import { UserProfile } from "@/components/user-profile"
 
 interface ImprovedHeaderProps {
-  showOptInForm: () => void
+  showOptInForm: (isApplying?: boolean) => void
 }
 
 export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
@@ -102,7 +102,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
               <UserProfile />
             ) : (
               <Button
-                onClick={showOptInForm}
+                onClick={() => showOptInForm(false)}
                 className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-medium"
               >
                 Sign Up
@@ -110,7 +110,7 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
             )}
 
             <Button
-              onClick={showOptInForm}
+              onClick={() => showOptInForm(true)}
               className="bg-white hover:bg-white/90 text-[#0A3C1F] font-medium"
               aria-label="Apply now for Deputy Sheriff position"
             >
@@ -172,7 +172,10 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                   </div>
                 ) : (
                   <Button
-                    onClick={showOptInForm}
+                    onClick={() => {
+                      showOptInForm(false)
+                      setIsMenuOpen(false)
+                    }}
                     className="bg-[#FFD700] hover:bg-[#FFD700]/90 text-[#0A3C1F] dark:text-black font-medium w-full"
                   >
                     Sign Up
@@ -180,7 +183,10 @@ export function ImprovedHeader({ showOptInForm }: ImprovedHeaderProps) {
                 )}
 
                 <Button
-                  onClick={showOptInForm}
+                  onClick={() => {
+                    showOptInForm(true)
+                    setIsMenuOpen(false)
+                  }}
                   className="bg-white hover:bg-white/90 text-[#0A3C1F] font-medium w-full"
                   aria-label="Apply now for Deputy Sheriff position"
                 >
